@@ -94,9 +94,9 @@ helm_fluent_bit_enabled_cloudwatchlogs          = "true"
 helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
 helm_fluent_bit_enabled_elasticsearch           = "false"
 
-k8s_nlb_name_int = "nlb-int"
-k8s_alb_name_int = "alb-int"
-k8s_alb_name_ext = "alb-ext"
+k8s_nlb_name_int = "pagopa-dev-atm-layer-nlb-int"
+k8s_alb_name_int = "pagopa-dev-atm-layer-alb-int"
+k8s_alb_name_ext = "pagopa-dev-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
 k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
