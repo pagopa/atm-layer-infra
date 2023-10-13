@@ -1,5 +1,5 @@
 locals {
-  eks_cluster_name = "${local.namespace}-${var.eks_cluster_name}"
+  eks_cluster_name    = "${local.namespace}-${var.eks_cluster_name}"
   eks_node_group_name = "${local.namespace}-${var.eks_node_group_name}"
 }
 

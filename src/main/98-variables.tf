@@ -49,8 +49,8 @@ variable "vpc_public_subnets_cidr" {
 
 variable "vpc_endpoints" {
   type = map(object({
-    name     = string
-    type     = string
+    name = string
+    type = string
   }))
   description = "Map of VPC Endpoints"
 }

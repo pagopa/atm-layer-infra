@@ -18,7 +18,7 @@ resource "aws_kms_key" "aws_backup_secondary_key" {
 }
 
 resource "aws_kms_alias" "aws_backup_secondary_key" {
-  provider                = aws.ireland
+  provider      = aws.ireland
   name          = "alias/backup/${local.secondary_vault_name}"
   target_key_id = aws_kms_key.aws_backup_secondary_key.key_id
 }

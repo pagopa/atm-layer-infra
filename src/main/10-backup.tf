@@ -1,7 +1,7 @@
 locals {
-  vault_name = "${local.namespace}-${var.vault_name}"
+  vault_name           = "${local.namespace}-${var.vault_name}"
   secondary_vault_name = "${local.namespace}-${var.secondary_vault_name}"
-  backup_plan_name = "${local.namespace}-${var.backup_plan_name}"
+  backup_plan_name     = "${local.namespace}-${var.backup_plan_name}"
 }
 
 ########
