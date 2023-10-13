@@ -1,18 +1,18 @@
-env_short   = "d"
-environment = "dev"
+env_short   = "p"
+environment = "prod"
 
 # Ref: https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/132810155/Azure+-+Naming+Tagging+Convention#Tagging
 tags = {
   CreatedBy   = "Terraform"
-  Environment = "Dev"
+  Environment = "Prod"
   Owner       = "ATM Layer"
   Source      = ""
   CostCenter  = ""
 }
 
-vpc_cidr                 = "10.110.0.0/22"
-vpc_private_subnets_cidr = ["10.110.0.0/24", "10.110.1.0/24", "10.110.2.0/24"]
-vpc_public_subnets_cidr  = ["10.110.3.0/26", "10.110.3.64/26", "10.110.3.128/26"]
+vpc_cidr                 = "10.110.8.0/22"
+vpc_private_subnets_cidr = ["10.110.8.0/24", "10.110.9.0/24", "10.110.10.0/24"]
+vpc_public_subnets_cidr  = ["10.110.11.0/26", "10.110.11.64/26", "10.110.11.128/26"]
 vpc_endpoints = {
   sns = {
     name     = "sns"
@@ -49,7 +49,7 @@ vpc_endpoints = {
   logs = {
     name     = "logs"
     type     = "Interface"
-  }
+  },
 }
 
 eks_cluster_name            = "eks"
@@ -115,7 +115,7 @@ backup_selection_name      = "backup-selection"
 
 cloudwatch_rule_turn_off = "cron(0 18 * * ? *)"      # TURN OFF Ogni giorno alle 20:00 Rome
 cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
-night_shutdown           = true
+night_shutdown           = false
 
 microservices = {
   quarkus_hello_world = {

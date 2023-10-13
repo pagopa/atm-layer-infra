@@ -7,7 +7,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "PagoPA VPC"
+    Name = "${local.namespace}-vpc"
   }
 }
 
@@ -17,7 +17,7 @@ resource "aws_subnet" "priv_subnet_1" {
   availability_zone = var.azs[0]
 
   tags = {
-    Name                              = "Priv 1 - PagoPA VPC"
+    Name                              = "${local.namespace}-priv-1"
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -27,7 +27,7 @@ resource "aws_subnet" "priv_subnet_2" {
   cidr_block        = var.vpc_private_subnets_cidr[1]
   availability_zone = var.azs[1]
   tags = {
-    Name                              = "Priv 2 - PagoPA VPC"
+    Name                              = "${local.namespace}-priv-2"
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -37,7 +37,7 @@ resource "aws_subnet" "priv_subnet_3" {
   cidr_block        = var.vpc_private_subnets_cidr[2]
   availability_zone = var.azs[2]
   tags = {
-    Name                              = "Priv 3 - PagoPA VPC"
+    Name                              = "${local.namespace}-priv-3"
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -47,7 +47,7 @@ resource "aws_subnet" "pub_subnet_1" {
   cidr_block        = var.vpc_public_subnets_cidr[0]
   availability_zone = var.azs[0]
   tags = {
-    Name                     = "Pub 1 - PagoPA VPC"
+    Name                     = "${local.namespace}-pub-1"
     "kubernetes.io/role/elb" = 1
   }
 }
@@ -57,7 +57,7 @@ resource "aws_subnet" "pub_subnet_2" {
   cidr_block        = var.vpc_public_subnets_cidr[1]
   availability_zone = var.azs[1]
   tags = {
-    Name                     = "Pub 2 - PagoPA VPC"
+    Name                     = "${local.namespace}-pub-2"
     "kubernetes.io/role/elb" = 1
   }
 }
@@ -67,7 +67,7 @@ resource "aws_subnet" "pub_subnet_3" {
   cidr_block        = var.vpc_public_subnets_cidr[2]
   availability_zone = var.azs[2]
   tags = {
-    Name                     = "Pub 3 - PagoPA VPC"
+    Name                     = "${local.namespace}-pub-3"
     "kubernetes.io/role/elb" = 1
   }
 }
@@ -75,7 +75,7 @@ resource "aws_subnet" "pub_subnet_3" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "IGW - PagoPA VPC"
+    Name = "${local.namespace}-igw"
   }
 }
 
@@ -85,7 +85,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "pub_1" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "Pub RT - PagoPA VPC"
+    Name = "${local.namespace}-pub-rt"
   }
 }
 
@@ -111,7 +111,7 @@ resource "aws_route_table_association" "pub_3" {
 resource "aws_route_table" "priv_1" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "Priv 1 RT - PagoPA VPC"
+    Name = "${local.namespace}-priv-rt-1"
   }
 }
 
@@ -129,7 +129,7 @@ resource "aws_route_table_association" "priv_1" {
 resource "aws_route_table" "priv_2" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "Priv 2 RT - PagoPA VPC"
+    Name = "${local.namespace}-priv-rt-2"
   }
 }
 
@@ -147,7 +147,7 @@ resource "aws_route_table_association" "priv_2" {
 resource "aws_route_table" "priv_3" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "Priv 3 RT - PagoPA VPC"
+    Name = "${local.namespace}-priv-rt-3"
   }
 }
 
@@ -168,7 +168,7 @@ resource "aws_route_table_association" "priv_3" {
 resource "aws_eip" "nat_1" {
   domain = "vpc"
   tags = {
-    Name = "EIP NAT 1 - PagoPA VPC"
+    Name = "${local.namespace}-eip-nat-1"
   }
 }
 
@@ -178,14 +178,14 @@ resource "aws_nat_gateway" "nat_1" {
 
   depends_on = [aws_internet_gateway.igw]
   tags = {
-    Name = "NAT 1 - PagoPA VPC"
+    Name = "${local.namespace}-nat-1"
   }
 }
 
 resource "aws_eip" "nat_2" {
   domain = "vpc"
   tags = {
-    Name = "EIP NAT 2 - PagoPA VPC"
+    Name = "${local.namespace}-eip-nat-2"
   }
 }
 
@@ -195,14 +195,14 @@ resource "aws_nat_gateway" "nat_2" {
 
   depends_on = [aws_internet_gateway.igw]
   tags = {
-    Name = "NAT 2 - PagoPA VPC"
+    Name = "${local.namespace}-nat-2"
   }
 }
 
 resource "aws_eip" "nat_3" {
   domain = "vpc"
   tags = {
-    Name = "EIP NAT 3 - PagoPA VPC"
+    Name = "${local.namespace}-eip-nat-3"
   }
 }
 
@@ -212,7 +212,7 @@ resource "aws_nat_gateway" "nat_3" {
 
   depends_on = [aws_internet_gateway.igw]
   tags = {
-    Name = "NAT 3 - PagoPA VPC"
+    Name = "${local.namespace}-nat-3"
   }
 }
 
@@ -220,12 +220,12 @@ resource "aws_nat_gateway" "nat_3" {
 # Subnet Group for DB
 ########
 resource "aws_db_subnet_group" "rds" {
-  name       = "postgresql-sbnt-group"
+  name       = "${local.namespace}-aurora-sbnt-group"
   subnet_ids = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
 }
 
 resource "aws_elasticache_subnet_group" "redis" {
-  name       = "redis-sbnt-group"
+  name       = "${local.namespace}-redis-sbnt-group"
   subnet_ids = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
 }
 
@@ -233,10 +233,11 @@ resource "aws_elasticache_subnet_group" "redis" {
 # Security Group for VPC Endpoints
 ########
 resource "aws_security_group" "vpc_endpoint" {
-  name   = "vpc-endpoint-sg"
+  name   = "${local.namespace}-vpc-endpoint-sg"
   vpc_id = aws_vpc.main.id
+
   tags = {
-    Name = "VPC Endpoint SG - PagoPA VPC"
+    Name = "${local.namespace}-vpc-endpoint-sg"
   }
 }
 
@@ -280,7 +281,7 @@ resource "aws_vpc_endpoint" "endpoint" {
 
   private_dns_enabled = true
   tags = {
-    Name = each.value.tag_name
+    Name = "${local.namespace}-${each.value.name}"
   }
 
 }

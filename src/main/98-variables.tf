@@ -12,7 +12,7 @@ variable "aws_secondary_region" {
 
 variable "app_name" {
   type        = string
-  default     = "ATM Layer"
+  default     = "atm-layer"
   description = "App name."
 }
 
@@ -51,7 +51,6 @@ variable "vpc_endpoints" {
   type = map(object({
     name     = string
     type     = string
-    tag_name = string
   }))
   description = "Map of VPC Endpoints"
 }
@@ -252,10 +251,58 @@ variable "helm_alb_controller_chart_settings" {
   description = "Additional settings which will be passed to the Helm chart values."
 }
 
+variable "helm_fluent_bit_name" {
+  type        = string
+  default     = "fluent-bit"
+  description = "Helm name for fluent bit."
+}
+
+variable "helm_fluent_bit_chart_repository" {
+  type        = string
+  default     = "https://aws.github.io/eks-charts"
+  description = "Helm chart repository for fluent bit."
+}
+
+variable "helm_fluent_bit_chart_name" {
+  type        = string
+  default     = "aws-for-fluent-bit"
+  description = "Helm chart name for fluent bit."
+}
+
+variable "helm_fluent_bit_chart_version" {
+  type        = string
+  description = "Helm chart version for fluent bit."
+}
+
+variable "helm_fluent_bit_create_serviceaccount" {
+  type        = bool
+  description = "Helm chart create service account for fluent bit."
+}
+
+variable "helm_fluent_bit_enabled_cloudwatchlogs" {
+  type        = bool
+  description = "Helm chart enable cloudwatch logs for fluent bit."
+}
+
+variable "helm_fluent_bit_logretentiondays_cloudwatchlogs" {
+  type        = number
+  description = "Helm chart log retention days for fluent bit."
+}
+
+variable "helm_fluent_bit_enabled_elasticsearch" {
+  type        = bool
+  description = "Helm chart enabled elasticsearch for fluent bit."
+}
+
 variable "k8s_kube_system_namespace" {
   type        = string
   default     = "kube-system"
   description = "Kubernetes namespace."
+}
+
+variable "k8s_nlb_name_int" {
+  type        = string
+  description = "Kubernetes ALB Internal."
 }
 
 variable "k8s_alb_name_int" {
@@ -352,9 +399,21 @@ variable "cloudwatch_rule_turn_on" {
   description = "Cloudwatch turn on cron."
 }
 
-variable "microservice5" {
+variable "night_shutdown" {
+  type        = bool
+  description = "Boolean to choose if shutdown EKS and RDS the night"
+}
+
+variable "microservices" {
+  type = map(object({
+    name = string
+  }))
+  description = "Map of Microservices"
+}
+
+variable "api_gateway_name" {
   type        = string
-  description = "Microservice5 name."
+  description = "Api Gateway name."
 }
 
 variable "tags" {

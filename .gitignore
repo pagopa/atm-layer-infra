@@ -37,3 +37,5 @@ src/poc/
 
 #idea
 .idea/
+
+*.zip

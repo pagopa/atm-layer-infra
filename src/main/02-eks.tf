@@ -1,9 +1,18 @@
+locals {
+  eks_cluster_name = "${local.namespace}-${var.eks_cluster_name}"
+  eks_node_group_name = "${local.namespace}-${var.eks_node_group_name}"
+}
+
 ########
 # Security group for EKS Cluster
 ########
 resource "aws_security_group" "eks_cluster" {
-  name   = "eks-sg"
+  name   = "${local.namespace}-eks-sg"
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.namespace}-eks-sg"
+  }
 }
 
 resource "aws_security_group_rule" "eks_rule_ingress_1" {
@@ -28,9 +37,9 @@ resource "aws_security_group_rule" "eks_rule_egress_1" {
 # EKS Cluster
 ########
 resource "aws_eks_cluster" "eks_cluster" {
-  name                      = var.eks_cluster_name
+  name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
-  enabled_cluster_log_types = ["api", "audit"]
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   vpc_config {
     subnet_ids = [
@@ -119,7 +128,7 @@ EOT
 # IAM role and policy attachment for EKS Cluster
 ########
 resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster-role"
+  name = "${local.namespace}-eks-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -149,8 +158,12 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_2" {
 # Security group for EKS Node group
 ########
 resource "aws_security_group" "eks_node_group" {
-  name   = "eks-node-sg"
+  name   = "${local.namespace}-eks-node-sg"
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.namespace}-eks-node-sg"
+  }
 }
 
 resource "aws_security_group_rule" "eks_node_rule_ingress_1" {
@@ -176,7 +189,7 @@ resource "aws_security_group_rule" "eks_node_rule_egress_1" {
 ########
 resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = var.eks_node_group_name
+  node_group_name = local.eks_node_group_name
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids = [
     aws_subnet.priv_subnet_1.id,
@@ -194,7 +207,9 @@ resource "aws_eks_node_group" "eks_node_group" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_nodes_1,
     aws_iam_role_policy_attachment.eks_nodes_2,
-    aws_iam_role_policy_attachment.eks_nodes_3
+    aws_iam_role_policy_attachment.eks_nodes_3,
+    aws_iam_role_policy_attachment.eks_nodes_4,
+    aws_iam_role_policy_attachment.eks_nodes_5
   ]
 }
 
@@ -231,14 +246,6 @@ resource "aws_iam_role_policy_attachment" "eks_nodes_2" {
 resource "aws_iam_role_policy_attachment" "eks_nodes_3" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.eks_nodes.name
-}
-
-#######
-# Cloudwatch - K8s
-########
-resource "aws_cloudwatch_log_group" "log" {
-  name              = "/aws/eks/${var.eks_cluster_name}/cluster"
-  retention_in_days = 5
 }
 
 #######
@@ -498,29 +505,17 @@ resource "aws_iam_role_policy_attachment" "eks_nodes_4" {
   role       = aws_iam_role.eks_nodes.name
 }
 
-########
-# [dev] Autoscaling scheduled for EKS Node Group
-########
-resource "aws_autoscaling_schedule" "scale_down" {
-  count = var.environment == "dev" ? 1 : 0
-
-  scheduled_action_name  = "scale-down-nightly"
-  min_size               = 0
-  max_size               = 0
-  desired_capacity       = 0
-  recurrence             = var.eks_scale_down_cron
-  autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
+resource "aws_iam_role_policy_attachment" "eks_nodes_5" {
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  role       = aws_iam_role.eks_nodes.name
 }
 
-resource "aws_autoscaling_schedule" "scale_up" {
-  count = var.environment == "dev" ? 1 : 0
-
-  scheduled_action_name  = "scale-up-worktime"
-  min_size               = var.eks_cluster_scaling_min
-  max_size               = var.eks_cluster_scaling_max
-  desired_capacity       = var.eks_cluster_scaling_desired
-  recurrence             = var.eks_scale_up_cron
-  autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
+#######
+# Cloudwatch - K8s
+########
+resource "aws_cloudwatch_log_group" "log" {
+  name              = "/aws/eks/${local.eks_cluster_name}/cluster"
+  retention_in_days = 5
 }
 
 ########

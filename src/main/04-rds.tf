@@ -1,9 +1,17 @@
+locals {
+  rds_cluster_name = "${local.namespace}-${var.rds_cluster_name}"
+}
+
 ########
 # Security group for RDS
 ########
 resource "aws_security_group" "rds" {
-  name   = "rds-sg"
+  name   = "${local.namespace}-rds-sg"
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.namespace}-rds-sg"
+  }
 }
 
 resource "aws_security_group_rule" "rds_rule_ingress_1" {
@@ -34,7 +42,7 @@ resource "random_password" "password" {
 }
 
 resource "aws_rds_cluster" "rds" {
-  cluster_identifier      = var.rds_cluster_name
+  cluster_identifier      = local.rds_cluster_name
   engine                  = var.rds_cluster_engine
   engine_version          = var.rds_cluster_engine_version
   availability_zones      = var.azs
@@ -67,7 +75,7 @@ resource "aws_rds_cluster_instance" "rds_instances" {
 # Secret Manager - RDS
 ########
 resource "aws_secretsmanager_secret" "rds_secret_manager" {
-  name        = "rds/credentials"
+  name        = "${local.namespace}/rds/credentials"
   description = "RDS database credentials"
 }
 

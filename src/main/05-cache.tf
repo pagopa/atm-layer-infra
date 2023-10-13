@@ -1,9 +1,17 @@
+locals {
+  redis_cluster_name = "${local.namespace}-${var.redis_cluster_name}"
+}
+
 ########
 # Security group for ElastiCache
 ########
 resource "aws_security_group" "redis" {
-  name   = "redis-sg"
+  name   = "${local.namespace}-redis-sg"
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.namespace}-redis-sg"
+  }
 }
 
 resource "aws_security_group_rule" "redis_rule_ingress_1" {
@@ -28,7 +36,7 @@ resource "aws_security_group_rule" "redis_rule_egress_1" {
 # Redis Cluster
 ########
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id       = var.redis_cluster_name
+  replication_group_id       = local.redis_cluster_name
   description                = var.redis_cluster_description
   engine                     = var.redis_cluster_engine
   engine_version             = var.redis_cluster_engine_version
@@ -48,7 +56,7 @@ resource "aws_elasticache_replication_group" "redis" {
 # Secret Manager - Redis
 ########
 resource "aws_secretsmanager_secret" "redis_secret_manager" {
-  name        = "redis/credentials"
+  name        = "${local.namespace}/redis/credentials"
   description = "Redis credentials"
 }
 

@@ -1,19 +1,25 @@
+locals {
+  vault_name = "${local.namespace}-${var.vault_name}"
+  secondary_vault_name = "${local.namespace}-${var.secondary_vault_name}"
+  backup_plan_name = "${local.namespace}-${var.backup_plan_name}"
+}
+
 ########
 # Backup plan for RDS
 ########
 resource "aws_backup_vault" "vault" {
-  name        = var.vault_name
+  name        = local.vault_name
   kms_key_arn = aws_kms_key.aws_backup_key.arn
 }
 
 resource "aws_backup_vault" "secondary_vault" {
   provider    = aws.ireland
-  name        = var.secondary_vault_name
+  name        = local.secondary_vault_name
   kms_key_arn = aws_kms_key.aws_backup_secondary_key.arn
 }
 
 resource "aws_backup_plan" "plan" {
-  name = var.backup_plan_name
+  name = local.backup_plan_name
 
   rule {
     rule_name         = var.backup_plan_rule_name

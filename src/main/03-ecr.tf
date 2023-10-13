@@ -1,8 +1,10 @@
 ########
 # ECR Repository
 ########
-resource "aws_ecr_repository" "microservice5" {
-  name                 = var.microservice5
+resource "aws_ecr_repository" "microservice" {
+  for_each = var.microservices
+
+  name                 = "${local.namespace}-${each.value.name}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {

@@ -20,6 +20,7 @@ terraform {
 }
 
 provider "aws" {
+  profile = "auriga_test"
   region = var.aws_region
 
   default_tags {
@@ -28,6 +29,7 @@ provider "aws" {
 }
 
 provider "aws" {
+  profile = "auriga_test"
   alias = "ireland"
 
   region = var.aws_secondary_region
@@ -53,16 +55,18 @@ provider "helm" {
 
 locals {
   project    = format("%s-%s", var.app_name, var.env_short)
+  namespace  = format("pagopa-%s-%s", var.environment, var.app_name)  # pagopa-dev-atm-layer
   account_id = data.aws_caller_identity.current.account_id
 }
 
 data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster_auth" "kubernetes" {
-  name       = var.eks_cluster_name
+  name       = "${local.namespace}-${var.eks_cluster_name}"
   depends_on = [aws_eks_cluster.eks_cluster]
 }
+
 data "aws_eks_cluster" "kubernetes" {
-  name       = var.eks_cluster_name
+  name       = "${local.namespace}-${var.eks_cluster_name}"
   depends_on = [aws_eks_cluster.eks_cluster]
 }
