@@ -83,10 +83,10 @@ resource "aws_api_gateway_integration" "quarkus_hello_world_proxy" {
   type                    = "HTTP_PROXY"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
   connection_type         = "VPC_LINK"
-  request_parameters      = {
+  request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
   }
-  uri                     = "http://${aws_lb.nlb_int.dns_name}/{proxy}/"
+  uri = "http://${aws_lb.nlb_int.dns_name}/{proxy}/"
 
   tls_config {
     insecure_skip_verification = true
