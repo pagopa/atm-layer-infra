@@ -20,7 +20,6 @@ terraform {
 }
 
 provider "aws" {
-  profile = "auriga_test"
   region = var.aws_region
 
   default_tags {
@@ -29,7 +28,6 @@ provider "aws" {
 }
 
 provider "aws" {
-  profile = "auriga_test"
   alias = "ireland"
 
   region = var.aws_secondary_region
@@ -55,7 +53,7 @@ provider "helm" {
 
 locals {
   project    = format("%s-%s", var.app_name, var.env_short)
-  namespace  = format("pagopa-%s-%s", var.environment, var.app_name)  # pagopa-dev-atm-layer
+  namespace  = format("pagopa-%s-%s", var.environment, var.app_name)
   account_id = data.aws_caller_identity.current.account_id
 }
 
