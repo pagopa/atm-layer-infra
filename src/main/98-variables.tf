@@ -89,6 +89,12 @@ variable "eks_node_group_type" {
   description = "EKS Cluster node group type."
 }
 
+variable "eks_log_retention_in_days" {
+  type        = number
+  default     = 5
+  description = "EKS Cluster Log Retention in days."
+}
+
 variable "eks_scale_down_cron" {
   type        = string
   description = "EKS Cluster node group scaling down the cluster for dev env during the night."
@@ -161,6 +167,12 @@ variable "rds_cluster_preferred_backup_window" {
   type        = string
   default     = "07:00-09:00"
   description = "RDS Cluster backup retention period."
+}
+
+variable "rds_cluster_preferred_maintanance_windows" {
+  type        = string
+  default     = "Sun:02:00-Sun:04:00"
+  description = "RDS Cluster mainanance windows slot"
 }
 
 variable "redis_cluster_name" {
@@ -404,11 +416,12 @@ variable "night_shutdown" {
   description = "Boolean to choose if shutdown EKS and RDS the night"
 }
 
-variable "microservices" {
+variable "services" {
   type = map(object({
-    name = string
+    name              = string,
+    ecr_registry_name = string
   }))
-  description = "Map of Microservices"
+  description = "Map of Services"
 }
 
 variable "api_gateway_name" {

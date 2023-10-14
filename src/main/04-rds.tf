@@ -42,23 +42,24 @@ resource "random_password" "password" {
 }
 
 resource "aws_rds_cluster" "rds" {
-  cluster_identifier      = local.rds_cluster_name
-  engine                  = var.rds_cluster_engine
-  engine_version          = var.rds_cluster_engine_version
-  availability_zones      = var.azs
-  database_name           = var.rds_cluster_db_name
-  master_username         = var.rds_cluster_master_username
-  master_password         = random_password.password.result
-  backup_retention_period = var.rds_cluster_backup_retention_period
-  preferred_backup_window = var.rds_cluster_preferred_backup_window
-  db_subnet_group_name    = aws_db_subnet_group.rds.id
-  vpc_security_group_ids  = [aws_security_group.rds.id]
-  network_type            = "IPV4"
-  skip_final_snapshot     = true
-  apply_immediately       = true
-  port                    = var.rds_cluster_port
-  kms_key_id              = aws_kms_key.aws_rds_key.arn
-  storage_encrypted       = true
+  cluster_identifier           = local.rds_cluster_name
+  engine                       = var.rds_cluster_engine
+  engine_version               = var.rds_cluster_engine_version
+  availability_zones           = var.azs
+  database_name                = var.rds_cluster_db_name
+  master_username              = var.rds_cluster_master_username
+  master_password              = random_password.password.result
+  backup_retention_period      = var.rds_cluster_backup_retention_period
+  preferred_backup_window      = var.rds_cluster_preferred_backup_window
+  db_subnet_group_name         = aws_db_subnet_group.rds.id
+  vpc_security_group_ids       = [aws_security_group.rds.id]
+  network_type                 = "IPV4"
+  skip_final_snapshot          = true
+  apply_immediately            = true
+  port                         = var.rds_cluster_port
+  kms_key_id                   = aws_kms_key.aws_rds_key.arn
+  storage_encrypted            = true
+  preferred_maintenance_window = var.rds_cluster_preferred_maintanance_windows
 }
 
 resource "aws_rds_cluster_instance" "rds_instances" {

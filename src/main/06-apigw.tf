@@ -21,51 +21,18 @@ resource "aws_api_gateway_vpc_link" "vpc_link" {
   target_arns = [aws_lb.nlb_int.arn]
 }
 
-# # Following resource needs Internal ALB
-
 # #########
-# # API Gateway - Internal microservice - quarkus_hello_world
+# # API Gateway - Internal microservice - {proxy+}
 # #########
-# resource "aws_api_gateway_resource" "quarkus_hello_world" {
-#   rest_api_id = aws_api_gateway_rest_api.api.id
-#   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-#   path_part   = var.microservices["quarkus_hello_world"].name
-# }
-
-# resource "aws_api_gateway_method" "quarkus_hello_world" {
-#   rest_api_id   = aws_api_gateway_rest_api.api.id
-#   resource_id   = aws_api_gateway_resource.quarkus_hello_world.id
-#   http_method   = "GET"
-#   authorization = "NONE"
-# }
-
-# resource "aws_api_gateway_integration" "quarkus_hello_world" {
-#   rest_api_id             = aws_api_gateway_rest_api.api.id
-#   resource_id             = aws_api_gateway_resource.quarkus_hello_world.id
-#   http_method             = aws_api_gateway_method.quarkus_hello_world.http_method
-#   integration_http_method = "ANY"
-#   type                    = "HTTP_PROXY"
-#   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
-#   connection_type         = "VPC_LINK"
-#   uri                     = "http://${aws_lb.nlb_int.dns_name}/${var.microservices["quarkus_hello_world"].name}/"
-
-#   tls_config {
-#     insecure_skip_verification = true
-#   }
-# }
-
-# #########
-# # API Gateway - Internal microservice - quarkus_hello_world/{proxy+}
-# #########
-resource "aws_api_gateway_resource" "quarkus_hello_world_proxy" {
+resource "aws_api_gateway_resource" "root_path_proxy" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
   path_part   = "{proxy+}"
 }
 
-resource "aws_api_gateway_method" "quarkus_hello_world_proxy" {
+resource "aws_api_gateway_method" "root_path_any_proxy" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.quarkus_hello_world_proxy.id
+  resource_id   = aws_api_gateway_resource.root_path_proxy.id
   http_method   = "ANY"
   authorization = "NONE"
 
@@ -75,10 +42,10 @@ resource "aws_api_gateway_method" "quarkus_hello_world_proxy" {
 
 }
 
-resource "aws_api_gateway_integration" "quarkus_hello_world_proxy" {
+resource "aws_api_gateway_integration" "root_path_integration_proxy" {
   rest_api_id             = aws_api_gateway_rest_api.api.id
-  resource_id             = aws_api_gateway_resource.quarkus_hello_world_proxy.id
-  http_method             = aws_api_gateway_method.quarkus_hello_world_proxy.http_method
+  resource_id             = aws_api_gateway_resource.root_path_proxy.id
+  http_method             = aws_api_gateway_method.root_path_any_proxy.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
@@ -108,7 +75,7 @@ resource "aws_api_gateway_deployment" "deployment" {
   }
 
   depends_on = [
-    aws_api_gateway_integration.quarkus_hello_world_proxy
+    aws_api_gateway_integration.root_path_integration_proxy
   ]
 }
 

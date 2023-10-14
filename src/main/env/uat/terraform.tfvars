@@ -117,7 +117,7 @@ cloudwatch_rule_turn_off = "cron(0 18 * * ? *)"      # TURN OFF Ogni giorno alle
 cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
 night_shutdown           = false
 
-microservices = {
+services = {
   quarkus_hello_world = {
     name = "helloworld"
   }
