@@ -117,9 +117,14 @@ cloudwatch_rule_turn_off = "cron(0 18 * * ? *)"      # TURN OFF Ogni giorno alle
 cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
 night_shutdown           = true
 
-microservices = {
+services = {
   quarkus_hello_world = {
-    name = "helloworld"
+    name = "helloworld",
+    ecr_registry_name = "helloworld"
+  },
+  atm_layer_wf_engine = {
+    name = "wf-engine",
+    ecr_registry_name = "atm-layer-wf-engine"
   }
 }
 

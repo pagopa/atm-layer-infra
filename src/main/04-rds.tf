@@ -59,6 +59,7 @@ resource "aws_rds_cluster" "rds" {
   port                    = var.rds_cluster_port
   kms_key_id              = aws_kms_key.aws_rds_key.arn
   storage_encrypted       = true
+  preferred_maintenance_window = var.rds_cluster_preferred_maintanance_windows
 }
 
 resource "aws_rds_cluster_instance" "rds_instances" {

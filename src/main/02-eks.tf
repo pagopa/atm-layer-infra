@@ -515,7 +515,7 @@ resource "aws_iam_role_policy_attachment" "eks_nodes_5" {
 ########
 resource "aws_cloudwatch_log_group" "log" {
   name              = "/aws/eks/${local.eks_cluster_name}/cluster"
-  retention_in_days = 5
+  retention_in_days = var.eks_log_retention_in_days
 }
 
 ########
