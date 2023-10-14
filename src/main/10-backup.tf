@@ -13,7 +13,7 @@ resource "aws_backup_vault" "vault" {
 }
 
 resource "aws_backup_vault" "secondary_vault" {
-  provider    = aws.secondary_region
+  provider    = aws.ireland
   name        = local.secondary_vault_name
   kms_key_arn = aws_kms_key.aws_backup_secondary_key.arn
 }

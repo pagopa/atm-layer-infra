@@ -28,7 +28,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "secondary_region"
+  alias  = "ireland"
   region = var.aws_secondary_region
 
   default_tags {
