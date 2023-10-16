@@ -7,4 +7,4 @@ tags = {
   "Source"      = ""
   "name"        = "S3 Remote Terraform State Store"
 }
-github_repository = "pagopa/atm-layer-infra"
+github_repository = "pagopa/atm-layer*"

@@ -63,8 +63,7 @@ resource "aws_s3_bucket_versioning" "terraform_states" {
 resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
   name           = "terraform-lock"
   hash_key       = "LockID"
-  read_capacity  = 4
-  write_capacity = 4
+  billing_mode   = "PAY_PER_REQUEST"
 
   attribute {
     name = "LockID"
