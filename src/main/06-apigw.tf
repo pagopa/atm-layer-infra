@@ -39,7 +39,6 @@ resource "aws_api_gateway_method" "root_path_any_proxy" {
   request_parameters = {
     "method.request.path.proxy" = true
   }
-
 }
 
 resource "aws_api_gateway_integration" "root_path_integration_proxy" {
