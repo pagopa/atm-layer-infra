@@ -209,7 +209,8 @@ resource "aws_eks_node_group" "eks_node_group" {
     aws_iam_role_policy_attachment.eks_nodes_2,
     aws_iam_role_policy_attachment.eks_nodes_3,
     aws_iam_role_policy_attachment.eks_nodes_4,
-    aws_iam_role_policy_attachment.eks_nodes_5
+    aws_iam_role_policy_attachment.eks_nodes_5,
+    aws_iam_role_policy_attachment.eks_nodes_6
   ]
 }
 
@@ -507,6 +508,11 @@ resource "aws_iam_role_policy_attachment" "eks_nodes_4" {
 
 resource "aws_iam_role_policy_attachment" "eks_nodes_5" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  role       = aws_iam_role.eks_nodes.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_nodes_6" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.eks_nodes.name
 }
 
