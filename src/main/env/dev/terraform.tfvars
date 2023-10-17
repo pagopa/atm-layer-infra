@@ -125,6 +125,18 @@ services = {
   atm_layer_wf_engine = {
     name = "wf-engine",
     ecr_registry_name = "atm-layer-wf-engine"
+  },
+  atm_layer_wf_task = {
+    name = "wf-task",
+    ecr_registry_name = "atm-layer-wf-task"
+  },
+  atm_layer_mil_adapter = {
+    name = "mil-adapter",
+    ecr_registry_name = "atm-layer-mil-adapter"
+  },
+  atm_layer_wf_process = {
+    name = "wf-process",
+    ecr_registry_name = "atm-layer-wf-process"
   }
 }
 

@@ -232,6 +232,24 @@ resource "aws_iam_role" "eks_nodes" {
       }
     ]
   })
+
+  inline_policy {
+    name = "secrets_policy"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+          ],
+        Effect = "Allow",
+        Resource = "*"
+        },
+      ]
+    })
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_nodes_1" {
