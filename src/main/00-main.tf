@@ -20,6 +20,7 @@ terraform {
 }
 
 provider "aws" {
+  profile = "auriga_test"
   region = var.aws_region
 
   default_tags {
@@ -28,6 +29,7 @@ provider "aws" {
 }
 
 provider "aws" {
+  profile = "auriga_test"
   alias  = "ireland"
   region = var.aws_secondary_region
 
