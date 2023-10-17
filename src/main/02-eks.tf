@@ -240,12 +240,12 @@ resource "aws_iam_role" "eks_nodes" {
       Version = "2012-10-17"
       Statement = [
         {
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
+          Action = [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:DescribeSecret"
           ],
-        Effect = "Allow",
-        Resource = "*"
+          Effect   = "Allow",
+          Resource = "*"
         },
       ]
     })

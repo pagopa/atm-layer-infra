@@ -8,7 +8,7 @@ resource "helm_release" "csi_secrets_store" {
   chart      = "secrets-store-csi-driver"
   version    = "1.3.4"
 
-  depends_on = [ aws_eks_cluster.eks_cluster ]
+  depends_on = [aws_eks_cluster.eks_cluster]
 }
 
 resource "helm_release" "secrets_provider_aws" {
@@ -18,5 +18,5 @@ resource "helm_release" "secrets_provider_aws" {
   chart      = "secrets-store-csi-driver-provider-aws"
   version    = "0.3.4"
 
-  depends_on = [ helm_release.csi_secrets_store ]
+  depends_on = [helm_release.csi_secrets_store]
 }
