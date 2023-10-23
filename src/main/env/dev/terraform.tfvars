@@ -14,18 +14,18 @@ vpc_cidr                 = "10.110.0.0/22"
 vpc_private_subnets_cidr = ["10.110.0.0/24", "10.110.1.0/24", "10.110.2.0/24"]
 vpc_public_subnets_cidr  = ["10.110.3.0/26", "10.110.3.64/26", "10.110.3.128/26"]
 vpc_endpoints = {
-  sns = {
-    name     = "sns"
-    type     = "Interface"
-  },
+  # sns = {
+  #   name     = "sns"
+  #   type     = "Interface"
+  # },
   backup = {
     name     = "backup"
     type     = "Interface"
   },
-  ecr_api = {
-    name     = "ecr.api"
-    type     = "Interface"
-  },
+  # ecr_api = {
+  #   name     = "ecr.api"
+  #   type     = "Interface"
+  # },
   ecr_dkr = {
     name     = "ecr.dkr"
     type     = "Interface"
@@ -38,14 +38,14 @@ vpc_endpoints = {
     name     = "secretsmanager"
     type     = "Interface"
   },
-  sqs = {
-    name     = "sqs"
-    type     = "Interface"
-  },
-  config = {
-    name     = "config"
-    type     = "Interface"
-  },
+  # sqs = {
+  #   name     = "sqs"
+  #   type     = "Interface"
+  # },
+  # config = {
+  #   name     = "config"
+  #   type     = "Interface"
+  # },
   logs = {
     name     = "logs"
     type     = "Interface"
