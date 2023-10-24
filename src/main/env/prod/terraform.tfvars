@@ -14,18 +14,18 @@ vpc_cidr                 = "10.110.8.0/22"
 vpc_private_subnets_cidr = ["10.110.8.0/24", "10.110.9.0/24", "10.110.10.0/24"]
 vpc_public_subnets_cidr  = ["10.110.11.0/26", "10.110.11.64/26", "10.110.11.128/26"]
 vpc_endpoints = {
-  sns = {
-    name     = "sns"
-    type     = "Interface"
-  },
+  # sns = {
+  #   name     = "sns"
+  #   type     = "Interface"
+  # },
   backup = {
     name     = "backup"
     type     = "Interface"
   },
-  ecr_api = {
-    name     = "ecr.api"
-    type     = "Interface"
-  },
+  # ecr_api = {
+  #   name     = "ecr.api"
+  #   type     = "Interface"
+  # },
   ecr_dkr = {
     name     = "ecr.dkr"
     type     = "Interface"
@@ -38,14 +38,14 @@ vpc_endpoints = {
     name     = "secretsmanager"
     type     = "Interface"
   },
-  sqs = {
-    name     = "sqs"
-    type     = "Interface"
-  },
-  config = {
-    name     = "config"
-    type     = "Interface"
-  },
+  # sqs = {
+  #   name     = "sqs"
+  #   type     = "Interface"
+  # },
+  # config = {
+  #   name     = "config"
+  #   type     = "Interface"
+  # },
   logs = {
     name     = "logs"
     type     = "Interface"
@@ -94,9 +94,9 @@ helm_fluent_bit_enabled_cloudwatchlogs          = "true"
 helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
 helm_fluent_bit_enabled_elasticsearch           = "false"
 
-k8s_nlb_name_int = "nlb-int"
-k8s_alb_name_int = "alb-int"
-k8s_alb_name_ext = "alb-ext"
+k8s_nlb_name_int = "pagopa-prod-atm-layer-nlb-int"
+k8s_alb_name_int = "pagopa-prod-atm-layer-alb-int"
+k8s_alb_name_ext = "pagopa-prod-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
 k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
@@ -119,7 +119,28 @@ night_shutdown           = false
 
 services = {
   quarkus_hello_world = {
-    name = "helloworld"
+    name = "helloworld",
+    ecr_registry_name = "helloworld"
+  },
+  atm_layer_wf_engine = {
+    name = "wf-engine",
+    ecr_registry_name = "atm-layer-wf-engine"
+  },
+  atm_layer_wf_task = {
+    name = "wf-task",
+    ecr_registry_name = "atm-layer-wf-task"
+  },
+  atm_layer_mil_adapter = {
+    name = "mil-adapter",
+    ecr_registry_name = "atm-layer-mil-adapter"
+  },
+  atm_layer_wf_process = {
+    name = "wf-process",
+    ecr_registry_name = "atm-layer-wf-process"
+  },
+  atm_layer_model = {
+    name = "model",
+    ecr_registry_name = "atm-layer-model"
   }
 }
 

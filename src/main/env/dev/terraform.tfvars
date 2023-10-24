@@ -137,6 +137,10 @@ services = {
   atm_layer_wf_process = {
     name = "wf-process",
     ecr_registry_name = "atm-layer-wf-process"
+  },
+  atm_layer_model = {
+    name = "model",
+    ecr_registry_name = "atm-layer-model"
   }
 }
 

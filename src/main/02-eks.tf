@@ -4,7 +4,7 @@ locals {
 }
 
 ########
-# Security group for EKS Cluster
+# Security group for EKS Cluster - 0.0.0.0 ingress to be updated from external internet (github pipe, etc)
 ########
 resource "aws_security_group" "eks_cluster" {
   name   = "${local.namespace}-eks-sg"
