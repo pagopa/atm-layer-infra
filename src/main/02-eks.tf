@@ -551,3 +551,51 @@ module "vpc_cni_irsa" {
     }
   }
 }
+
+########
+# Secret Manager - Camunda (add manually the secrets value after pod deployment)
+########
+resource "aws_secretsmanager_secret" "camunda_secret_manager" {
+  name        = "${local.namespace}/camunda/credentials"
+  description = "Camunda web credentials"
+}
+
+resource "aws_secretsmanager_secret_policy" "camunda_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.camunda_secret_manager.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        AWS = "${aws_iam_role.eks_cluster.arn}"
+      },
+      Action   = "secretsmanager:GetSecretValue",
+      Resource = "*"
+    }]
+  })
+}
+
+########
+# Secret Manager - MIL Auth (add manually the secrets value after pod deployment)
+########
+resource "aws_secretsmanager_secret" "mil_secret_manager" {
+  name        = "${local.namespace}/mil-auth/credentials"
+  description = "MIL Auth credentials"
+}
+
+resource "aws_secretsmanager_secret_policy" "mil_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.mil_secret_manager.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        AWS = "${aws_iam_role.eks_cluster.arn}"
+      },
+      Action   = "secretsmanager:GetSecretValue",
+      Resource = "*"
+    }]
+  })
+}
