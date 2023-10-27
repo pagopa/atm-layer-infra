@@ -279,7 +279,7 @@ resource "aws_vpc_endpoint" "endpoint" {
     aws_subnet.priv_subnet_3.id
   ]
 
-  private_dns_enabled = true
+  private_dns_enabled = each.value.priv_dns
   tags = {
     Name = "${local.namespace}-${each.value.name}"
   }

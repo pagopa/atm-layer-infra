@@ -17,39 +17,53 @@ vpc_endpoints = {
   # sns = {
   #   name     = "sns"
   #   type     = "Interface"
+  #   priv_dns = true
   # },
-  backup = {
-    name     = "backup"
-    type     = "Interface"
-  },
+  # backup = {
+  #   name     = "backup"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # },
   # ecr_api = {
   #   name     = "ecr.api"
   #   type     = "Interface"
+  #   priv_dns = true
   # },
   ecr_dkr = {
     name     = "ecr.dkr"
     type     = "Interface"
+    priv_dns = true
   },
-  kms = {
-    name     = "kms"
-    type     = "Interface"
-  },
+  # kms = {
+  #   name     = "kms"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # },
   secretsmanager = {
     name     = "secretsmanager"
     type     = "Interface"
+    priv_dns = true
   },
   # sqs = {
   #   name     = "sqs"
   #   type     = "Interface"
+  #   priv_dns = true
   # },
   # config = {
   #   name     = "config"
   #   type     = "Interface"
+  #   priv_dns = true
   # },
   logs = {
     name     = "logs"
     type     = "Interface"
+    priv_dns = true
   },
+  s3 = {
+    name     = "s3"
+    type     = "Interface"
+    priv_dns = false
+  }
 }
 
 eks_cluster_name            = "eks"

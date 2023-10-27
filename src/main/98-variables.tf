@@ -51,6 +51,7 @@ variable "vpc_endpoints" {
   type = map(object({
     name = string
     type = string
+    priv_dns = bool
   }))
   description = "Map of VPC Endpoints"
 }
