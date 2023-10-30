@@ -92,10 +92,11 @@ rds_cluster_db_name                 = "pagopadb"
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
+rds_instance_type                   = "db.t3.medium"
 
 redis_cluster_name                 = "redis"
 redis_cluster_engine_version       = "7.0"
-redis_cluster_node_type            = "cache.t3.micro"
+redis_cluster_node_type            = "cache.t4g.micro"
 redis_cluster_node_number          = 1
 redis_cluster_node_replica_number  = 2
 redis_cluster_parameter_group_name = "default.redis7"
@@ -103,10 +104,20 @@ redis_cluster_maintenance_window   = "sun:01:00-sun:03:00"
 
 helm_alb_controller_chart_version               = "1.6.0"
 helm_fluent_bit_chart_version                   = "0.1.30"
-helm_fluent_bit_create_serviceaccount           = "true"
-helm_fluent_bit_enabled_cloudwatchlogs          = "true"
+helm_fluent_bit_create_serviceaccount           = true
+helm_fluent_bit_enabled_cloudwatchlogs          = true
 helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
-helm_fluent_bit_enabled_elasticsearch           = "false"
+helm_fluent_bit_enabled_elasticsearch           = false
+
+helm_csi_secrets_chart_version          = "1.3.4"
+helm_csi_secrets_sync_secret            = true
+helm_csi_secrets_rotation_poll_interval = "10s"
+helm_csi_secrets_enable_secret_rotation = true
+
+helm_secrets_provider_aws_chart_version = "0.3.4"
+
+helm_reloader_chart_version                      = "1.0.46"
+helm_reloader_enable_deployment_reload_on_change = true
 
 k8s_nlb_name_int = "pagopa-dev-atm-layer-nlb-int"
 k8s_alb_name_int = "pagopa-dev-atm-layer-alb-int"
@@ -117,7 +128,32 @@ k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
-kms_deletion_window_in_days = 10
+kms_keys = {
+  backup = {
+    description     = "PAGOPA - KMS Backup key 1",
+    deletion_window = 10
+  },
+  backup_secondary = {
+    description     = "PAGOPA - KMS Backup key 2",
+    deletion_window = 10
+  },
+  eks = {
+    description     = "PAGOPA - KMS EKS key",
+    deletion_window = 10
+  },
+  rds = {
+    description     = "PAGOPA - KMS RDS key",
+    deletion_window = 10
+  },
+  s3 = {
+    description     = "PAGOPA - KMS S3 key",
+    deletion_window = 10
+  },
+  s3_replica = {
+    description     = "PAGOPA - KMS S3 Replica key",
+    deletion_window = 10
+  }
+}
 
 vault_name                 = "vault"
 secondary_vault_name       = "secondary-vault"
@@ -127,35 +163,35 @@ backup_plan_schedule       = "cron(0 12 * * ? *)"
 backup_plan_lifecycle_days = 2
 backup_selection_name      = "backup-selection"
 
-cloudwatch_rule_turn_off = "cron(0 18 * * ? *)"      # TURN OFF Ogni giorno alle 20:00 Rome
-cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
+cloudwatch_rule_turn_off = "cron(0 20 * * ? *)"      # TURN OFF Ogni giorno alle 21:00 Rome
+cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 07:00 Rome
 night_shutdown           = true
 
 services = {
   quarkus_hello_world = {
-    name = "helloworld",
+    name              = "helloworld",
     ecr_registry_name = "helloworld"
   },
   atm_layer_wf_engine = {
-    name = "wf-engine",
+    name              = "wf-engine",
     ecr_registry_name = "atm-layer-wf-engine"
   },
   atm_layer_wf_task = {
-    name = "wf-task",
+    name              = "wf-task",
     ecr_registry_name = "atm-layer-wf-task"
   },
   atm_layer_mil_adapter = {
-    name = "mil-adapter",
+    name              = "mil-adapter",
     ecr_registry_name = "atm-layer-mil-adapter"
   },
   atm_layer_wf_process = {
-    name = "wf-process",
+    name              = "wf-process",
     ecr_registry_name = "atm-layer-wf-process"
   },
   atm_layer_model = {
-    name = "model",
+    name              = "model",
     ecr_registry_name = "atm-layer-model"
   }
 }
 
-api_gateway_name             = "api-rest"
+api_gateway_name = "api-rest"

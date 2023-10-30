@@ -42,13 +42,15 @@ resource "random_password" "password" {
 }
 
 resource "aws_rds_cluster" "rds" {
-  cluster_identifier           = local.rds_cluster_name
-  engine                       = var.rds_cluster_engine
-  engine_version               = var.rds_cluster_engine_version
-  availability_zones           = var.azs
-  database_name                = var.rds_cluster_db_name
-  master_username              = var.rds_cluster_master_username
-  master_password              = random_password.password.result
+  cluster_identifier = local.rds_cluster_name
+  engine             = var.rds_cluster_engine
+  engine_version     = var.rds_cluster_engine_version
+  availability_zones = var.azs
+  database_name      = var.rds_cluster_db_name
+  master_username    = var.rds_cluster_master_username
+  master_password    = random_password.password.result
+  # manage_master_user_password  = true
+  # master_user_secret_kms_key_id = aws_kms_key.aws_rds_key.arn
   backup_retention_period      = var.rds_cluster_backup_retention_period
   preferred_backup_window      = var.rds_cluster_preferred_backup_window
   db_subnet_group_name         = aws_db_subnet_group.rds.id
@@ -66,7 +68,7 @@ resource "aws_rds_cluster_instance" "rds_instances" {
   count                = 3
   identifier           = "aurora-cluster-instance-${count.index}"
   cluster_identifier   = aws_rds_cluster.rds.id
-  instance_class       = "db.t3.medium"
+  instance_class       = var.rds_instance_type
   engine               = aws_rds_cluster.rds.engine
   engine_version       = aws_rds_cluster.rds.engine_version
   db_subnet_group_name = aws_db_subnet_group.rds.id

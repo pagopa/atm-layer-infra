@@ -49,8 +49,8 @@ variable "vpc_public_subnets_cidr" {
 
 variable "vpc_endpoints" {
   type = map(object({
-    name = string
-    type = string
+    name     = string
+    type     = string
     priv_dns = bool
   }))
   description = "Map of VPC Endpoints"
@@ -174,6 +174,11 @@ variable "rds_cluster_preferred_maintanance_windows" {
   type        = string
   default     = "Sun:02:00-Sun:04:00"
   description = "RDS Cluster mainanance windows slot"
+}
+
+variable "rds_instance_type" {
+  type        = string
+  description = "RDS Instance type"
 }
 
 variable "redis_cluster_name" {
@@ -307,6 +312,95 @@ variable "helm_fluent_bit_enabled_elasticsearch" {
   description = "Helm chart enabled elasticsearch for fluent bit."
 }
 
+variable "helm_csi_secrets_name" {
+  type        = string
+  default     = "csi-secrets-store"
+  description = "Helm name for csi secrets store."
+}
+
+variable "helm_csi_secrets_chart_repository" {
+  type        = string
+  default     = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+  description = "Helm chart repository for csi secrets store."
+}
+
+variable "helm_csi_secrets_chart_name" {
+  type        = string
+  default     = "secrets-store-csi-driver"
+  description = "Helm chart name for csi secrets store."
+}
+
+variable "helm_csi_secrets_chart_version" {
+  type        = string
+  description = "Helm chart version for csi secrets store."
+}
+
+variable "helm_csi_secrets_sync_secret" {
+  type        = bool
+  description = "Helm chart enable sync secrets for csi secrets store."
+}
+
+variable "helm_csi_secrets_rotation_poll_interval" {
+  type        = string
+  description = "Helm chart rotation poll interval for csi secrets store."
+}
+
+variable "helm_csi_secrets_enable_secret_rotation" {
+  type        = bool
+  description = "Helm chart enable secret rotation for csi secrets store."
+}
+
+variable "helm_secrets_provider_aws_name" {
+  type        = string
+  default     = "secrets-provider-aws"
+  description = "Helm name for secrets provider aws."
+}
+
+variable "helm_secrets_provider_aws_chart_repository" {
+  type        = string
+  default     = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
+  description = "Helm chart repository for secrets provider aws."
+}
+
+variable "helm_secrets_provider_aws_chart_name" {
+  type        = string
+  default     = "secrets-store-csi-driver-provider-aws"
+  description = "Helm chart name for secrets provider aws."
+}
+
+variable "helm_secrets_provider_aws_chart_version" {
+  type        = string
+  description = "Helm chart version for secrets provider aws."
+}
+
+variable "helm_reloader_name" {
+  type        = string
+  default     = "reloader"
+  description = "Helm name for reloader."
+}
+
+variable "helm_reloader_chart_repository" {
+  type        = string
+  default     = "https://stakater.github.io/stakater-charts"
+  description = "Helm chart repository for reloader."
+}
+
+variable "helm_reloader_chart_name" {
+  type        = string
+  default     = "reloader"
+  description = "Helm chart name for reloader."
+}
+
+variable "helm_reloader_chart_version" {
+  type        = string
+  description = "Helm chart version for reloader."
+}
+
+variable "helm_reloader_enable_deployment_reload_on_change" {
+  type        = bool
+  description = "Helm chart enable deployment reload on change for reloader."
+}
+
 variable "k8s_kube_system_namespace" {
   type        = string
   default     = "kube-system"
@@ -352,6 +446,14 @@ variable "kms_deletion_window_in_days" {
   type        = number
   default     = 10
   description = "KMS deletion windows in days."
+}
+
+variable "kms_keys" {
+  type = map(object({
+    description     = string
+    deletion_window = number
+  }))
+  description = "Map of KMS Keys"
 }
 
 variable "vault_name" {
