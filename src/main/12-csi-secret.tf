@@ -2,27 +2,27 @@
 # Secrets store - CSI driver to mount kube secrets on Pods
 ########
 resource "helm_release" "csi_secrets_store" {
-  name       = "csi-secrets-store"
-  namespace  = "kube-system"
-  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
-  chart      = "secrets-store-csi-driver"
-  version    = "1.3.4"
+  name       = var.helm_csi_secrets_name
+  namespace  = var.k8s_kube_system_namespace
+  repository = var.helm_csi_secrets_chart_repository
+  chart      = var.helm_csi_secrets_chart_name
+  version    = var.helm_csi_secrets_chart_version
 
   depends_on = [aws_eks_cluster.eks_cluster]
 
   set {
     name  = "syncSecret.enabled"
-    value = "true"
+    value = var.helm_csi_secrets_sync_secret
   }
 
   set {
     name  = "rotationPollInterval"
-    value = "10s"
+    value = var.helm_csi_secrets_rotation_poll_interval
   }
 
   set {
     name  = "enableSecretRotation"
-    value = "true"
+    value = var.helm_csi_secrets_enable_secret_rotation
   }
 }
 
@@ -30,11 +30,11 @@ resource "helm_release" "csi_secrets_store" {
 # Secrets store - AWS secrets provider to use Secrets Manager as kube secrets
 ########
 resource "helm_release" "secrets_provider_aws" {
-  name       = "secrets-provider-aws"
-  namespace  = "kube-system"
-  repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
-  chart      = "secrets-store-csi-driver-provider-aws"
-  version    = "0.3.4"
+  name       = var.helm_secrets_provider_aws_name
+  namespace  = var.k8s_kube_system_namespace
+  repository = var.helm_secrets_provider_aws_chart_repository
+  chart      = var.helm_secrets_provider_aws_chart_name
+  version    = var.helm_secrets_provider_aws_chart_version
 
   depends_on = [helm_release.csi_secrets_store]
 }
@@ -43,15 +43,15 @@ resource "helm_release" "secrets_provider_aws" {
 # Secrets store - Reloader to restart pod when a kube secret changes
 ########
 resource "helm_release" "reloader" {
-  name       = "reloader"
-  namespace  = "kube-system"
-  repository = "https://stakater.github.io/stakater-charts"
-  chart      = "reloader"
-  version    = "1.0.46"
+  name       = var.helm_reloader_name
+  namespace  = var.k8s_kube_system_namespace
+  repository = var.helm_reloader_chart_repository
+  chart      = var.helm_reloader_chart_name
+  version    = var.helm_reloader_chart_version
 
   set {
     name  = "deployment.reloadOnChange"
-    value = "true"
+    value = var.helm_reloader_enable_deployment_reload_on_change
   }
 
   depends_on = [aws_eks_cluster.eks_cluster]
@@ -61,7 +61,8 @@ resource "helm_release" "reloader" {
 # IAM role for service-account that needs Secret Manager access
 ########
 data "aws_iam_openid_connect_provider" "eks_oidc" {
-  url = aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer
+  url        = aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer
+  depends_on = [aws_eks_cluster.eks_cluster]
 }
 
 resource "aws_iam_role" "eks_serviceaccount" {
