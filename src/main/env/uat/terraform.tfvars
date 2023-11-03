@@ -89,6 +89,7 @@ eks_addons = {
 rds_cluster_name                    = "rds"
 rds_cluster_engine_version          = "15.3"
 rds_cluster_db_name                 = "pagopadb"
+rds_cluster_port                    = 5432
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
@@ -191,6 +192,10 @@ services = {
   atm_layer_model = {
     name              = "model",
     ecr_registry_name = "atm-layer-model"
+  },
+  atm_layer_schema = {
+    name              = "schema",
+    ecr_registry_name = "atm-layer-schema"
   }
 }
 

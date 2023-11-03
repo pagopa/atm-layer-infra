@@ -132,7 +132,6 @@ variable "rds_cluster_name" {
 
 variable "rds_cluster_port" {
   type        = number
-  default     = 5431
   description = "RDS Cluster port."
 }
 

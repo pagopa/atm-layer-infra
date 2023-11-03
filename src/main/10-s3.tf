@@ -62,6 +62,15 @@ resource "aws_iam_policy" "s3_eks_pod" {
             "Resource": [
               "${aws_s3_bucket.s3.arn}/*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:GenerateDataKey"
+            ],
+            "Resource": "${aws_kms_key.aws_s3_key.arn}"
         }
     ]
 }
