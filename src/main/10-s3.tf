@@ -204,3 +204,74 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
 
   depends_on = [aws_s3_bucket_versioning.s3]
 }
+
+########
+# CDN for primary S3 bucket
+########
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  origin {
+    domain_name              = aws_s3_bucket.s3.bucket_regional_domain_name
+    origin_id                = local.s3_name
+    origin_path              = "//RESOURCES"
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
+  }
+
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "CDN for ATM"
+  http_version    = "http2"
+
+  default_cache_behavior {
+    cache_policy_id  = var.cdn_cache_policy_id
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_name
+
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+      locations        = []
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "s3" {
+  name                              = "S3OAC"
+  description                       = "S3OAC"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "example" {
+  bucket = aws_s3_bucket.s3.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.s3.arn}//RESOURCES/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"
+          }
+        }
+      }
+    ]
+  })
+}

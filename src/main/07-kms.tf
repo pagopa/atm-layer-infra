@@ -53,6 +53,44 @@ resource "aws_kms_alias" "aws_s3_key" {
   target_key_id = aws_kms_key.aws_s3_key.key_id
 }
 
+resource "aws_kms_key_policy" "aws_s3_key" {
+  key_id = aws_kms_key.aws_s3_key.key_id
+  policy = jsonencode({
+    Id = "key-default"
+    Statement = [
+      {
+        Action = "kms:*"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${local.account_id}:root"
+        }
+        Resource = "*"
+        Sid      = "Enable IAM User Permissions"
+      },
+      {
+        Action = [
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey*"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Resource = "*"
+        Sid      = "Enable CDN to Decrypt S3 Object"
+        Condition = {
+          StringEquals = {
+            "aws:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"
+          }
+        }
+      },
+
+    ]
+    Version = "2012-10-17"
+  })
+}
+
 resource "aws_kms_key" "aws_s3_replica_key" {
   provider                = aws.ireland
   description             = var.kms_keys["s3_replica"].description

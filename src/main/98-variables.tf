@@ -518,6 +518,12 @@ variable "night_shutdown" {
   description = "Boolean to choose if shutdown EKS and RDS the night"
 }
 
+variable "cdn_cache_policy_id" {
+  type        = string
+  default     = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  description = "S3 optimez cache for CloudFront distribution cache policy"
+}
+
 variable "services" {
   type = map(object({
     name              = string,
