@@ -526,8 +526,12 @@ variable "cdn_cache_policy_id" {
 
 variable "services" {
   type = map(object({
-    name              = string,
+    name              = string
     ecr_registry_name = string
+    api_path          = string
+    api_uri           = string
+    api_key_required  = bool
+    api_enabled       = bool
   }))
   description = "Map of Services"
 }
@@ -535,6 +539,11 @@ variable "services" {
 variable "api_gateway_name" {
   type        = string
   description = "Api Gateway name."
+}
+
+variable "api_gateway_key_enabled" {
+  type        = bool
+  description = "If Api Gateway is enabled or not."
 }
 
 variable "tags" {

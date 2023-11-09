@@ -71,7 +71,7 @@ eks_cluster_scaling_min     = 3
 eks_cluster_scaling_max     = 3
 eks_cluster_scaling_desired = 3
 eks_node_group_name         = "eks-node-group"
-eks_node_group_type         = ["t3.medium"]
+eks_node_group_type         = ["t3.large"]
 eks_scale_down_cron         = "0 18 * * *"
 eks_scale_up_cron           = "0 6 * * 1-5"
 eks_addons = {
@@ -171,28 +171,61 @@ night_shutdown           = false
 services = {
   quarkus_hello_world = {
     name              = "helloworld",
-    ecr_registry_name = "helloworld"
+    ecr_registry_name = "helloworld",
+    api_path          = "microservice5",
+    api_uri           = "microservice5/{proxy}/",
+    api_key_required  = false,
+    api_enabled       = true
   },
   atm_layer_wf_engine = {
     name              = "wf-engine",
-    ecr_registry_name = "atm-layer-wf-engine"
+    ecr_registry_name = "atm-layer-wf-engine",
+    api_path          = "",
+    api_uri           = "",
+    api_key_required  = false,
+    api_enabled       = false
   },
   atm_layer_wf_task = {
     name              = "wf-task",
-    ecr_registry_name = "atm-layer-wf-task"
+    ecr_registry_name = "atm-layer-wf-task",
+    api_path          = "tasks",
+    api_uri           = "api/v1/tasks/{proxy}/",
+    api_key_required  = false,
+    api_enabled       = true
   },
   atm_layer_mil_adapter = {
     name              = "mil-adapter",
-    ecr_registry_name = "atm-layer-mil-adapter"
+    ecr_registry_name = "atm-layer-mil-adapter",
+    api_path          = "",
+    api_uri           = "",
+    api_key_required  = false,
+    api_enabled       = false
   },
   atm_layer_wf_process = {
     name              = "wf-process",
-    ecr_registry_name = "atm-layer-wf-process"
+    ecr_registry_name = "atm-layer-wf-process",
+    api_path          = "processes",
+    api_uri           = "api/v1/processes/{proxy}/",
+    api_key_required  = false,
+    api_enabled       = true
   },
   atm_layer_model = {
     name              = "model",
-    ecr_registry_name = "atm-layer-model"
+    ecr_registry_name = "atm-layer-model",
+    api_path          = "model",
+    api_uri           = "api/v1/model/{proxy}/",
+    api_key_required  = false,
+    api_enabled       = true
+  },
+  atm_layer_schema = {
+    name              = "schema",
+    ecr_registry_name = "atm-layer-schema",
+    api_path          = "",
+    api_uri           = "",
+    api_key_required  = false,
+    api_enabled       = false
   }
 }
 
-api_gateway_name = "api-rest"
+api_gateway_name        = "api-rest"
+api_gateway_key_enabled = true
