@@ -16,7 +16,10 @@ resource "aws_cloudwatch_dashboard" "overview" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/ApiGateway", "5XXError", "ApiName", "${local.api_gateway_name}", "Stage", "${var.environment}", { "stat": "Sum" }]
+          ["AWS/ApiGateway", "5XXError", 
+          "ApiName", "${local.api_gateway_name}", 
+          "Stage", "${var.environment}", 
+          { "stat": "Sum" }]
         ],
         "period": 300,
         "region": "${var.aws_region}",
@@ -31,7 +34,10 @@ resource "aws_cloudwatch_dashboard" "overview" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/ApiGateway", "4XXError", "ApiName", "${local.api_gateway_name}", "Stage", "${var.environment}", { "stat": "Sum" }]
+          ["AWS/ApiGateway", "4XXError", 
+          "ApiName", "${local.api_gateway_name}", 
+          "Stage", "${var.environment}", 
+          { "stat": "Sum" }]
         ],
         "period": 300,
         "region": "${var.aws_region}",
@@ -46,7 +52,9 @@ resource "aws_cloudwatch_dashboard" "overview" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", { "stat": "Average"}]
+          ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", 
+          "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", 
+          { "stat": "Average"}]
         ],
         "period": 300,
         "region": "${var.aws_region}",
@@ -61,8 +69,12 @@ resource "aws_cloudwatch_dashboard" "overview" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/EC2", "NetworkIn", "AutoScalingGroupName", "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", { "stat": "Sum"}],
-          ["AWS/EC2", "NetworkOut", "AutoScalingGroupName", "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", { "stat": "Sum"}]
+          ["AWS/EC2", "NetworkIn", "AutoScalingGroupName", 
+          "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", 
+          { "stat": "Sum"}],
+          ["AWS/EC2", "NetworkOut", "AutoScalingGroupName", 
+          "${aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name}", 
+          { "stat": "Sum"}]
         ],
         "period": 300,
         "region": "${var.aws_region}",
