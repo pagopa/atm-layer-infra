@@ -225,6 +225,10 @@ resource "aws_cognito_user_pool_client" "client" {
   allowed_oauth_flows          = ["client_credentials"]
   allowed_oauth_scopes         = aws_cognito_resource_server.resource.scope_identifiers
   supported_identity_providers = ["COGNITO"]
+  
+  refresh_token_validity = 4
+  access_token_validity  = 1
+  id_token_validity      = 1
 }
 
 resource "aws_cognito_user_pool_domain" "domain" {
