@@ -519,8 +519,9 @@ variable "night_shutdown" {
 }
 
 variable "cdn_cache_policy_id" {
-  type        = string
-  default     = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  type = string
+  # default     = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Cache optimized for S3
+  default     = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Cache disabled
   description = "S3 optimez cache for CloudFront distribution cache policy"
 }
 
@@ -531,6 +532,7 @@ variable "services" {
     api_path          = string
     api_uri           = string
     api_key_required  = bool
+    authorization     = bool
     api_enabled       = bool
   }))
   description = "Map of Services"

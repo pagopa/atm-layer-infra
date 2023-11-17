@@ -175,6 +175,7 @@ services = {
     api_path          = "microservice5",
     api_uri           = "microservice5/{proxy}/",
     api_key_required  = false,
+    authorization     = true,
     api_enabled       = true
   },
   atm_layer_wf_engine = {
@@ -183,6 +184,7 @@ services = {
     api_path          = "",
     api_uri           = "",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = false
   },
   atm_layer_wf_task = {
@@ -191,6 +193,7 @@ services = {
     api_path          = "tasks",
     api_uri           = "api/v1/tasks/{proxy}/",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = true
   },
   atm_layer_mil_adapter = {
@@ -199,6 +202,7 @@ services = {
     api_path          = "",
     api_uri           = "",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = false
   },
   atm_layer_wf_process = {
@@ -207,6 +211,7 @@ services = {
     api_path          = "processes",
     api_uri           = "api/v1/processes/{proxy}/",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = true
   },
   atm_layer_model = {
@@ -215,6 +220,7 @@ services = {
     api_path          = "model",
     api_uri           = "api/v1/model/{proxy}/",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = true
   },
   atm_layer_schema = {
@@ -223,6 +229,7 @@ services = {
     api_path          = "",
     api_uri           = "",
     api_key_required  = false,
+    authorization     = false,
     api_enabled       = false
   }
 }

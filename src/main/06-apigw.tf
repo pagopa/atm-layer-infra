@@ -53,11 +53,13 @@ resource "aws_api_gateway_resource" "root_microservice" {
 resource "aws_api_gateway_method" "root_microservice_any_proxy" {
   for_each = { for k, v in var.services : k => v if v.api_enabled }
 
-  rest_api_id      = aws_api_gateway_rest_api.api.id
-  resource_id      = aws_api_gateway_resource.root_microservice[each.key].id
-  http_method      = "ANY"
-  authorization    = "NONE"
-  api_key_required = each.value.api_key_required
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_microservice[each.key].id
+  http_method          = "ANY"
+  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt.id : ""
+  authorization_scopes = each.value.authorization ? aws_cognito_resource_server.resource.scope_identifiers : []
+  api_key_required     = each.value.api_key_required
 
   request_parameters = {
     "method.request.path.proxy" = true
@@ -98,11 +100,13 @@ resource "aws_api_gateway_resource" "root_path_proxy" {
 resource "aws_api_gateway_method" "root_path_any_proxy" {
   for_each = { for k, v in var.services : k => v if v.api_enabled }
 
-  rest_api_id      = aws_api_gateway_rest_api.api.id
-  resource_id      = aws_api_gateway_resource.root_path_proxy[each.key].id
-  http_method      = "ANY"
-  authorization    = "NONE"
-  api_key_required = each.value.api_key_required
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = "ANY"
+  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt.id : ""
+  authorization_scopes = each.value.authorization ? aws_cognito_resource_server.resource.scope_identifiers : []
+  api_key_required     = each.value.api_key_required
 
   request_parameters = {
     "method.request.path.proxy" = true
@@ -154,6 +158,17 @@ resource "aws_api_gateway_usage_plan_key" "api_usage_plan_key" {
 }
 
 #########
+# API Gateway - Authorizer
+#########
+resource "aws_api_gateway_authorizer" "jwt" {
+  name            = "jwt"
+  rest_api_id     = aws_api_gateway_rest_api.api.id
+  type            = "COGNITO_USER_POOLS"
+  identity_source = "method.request.header.Authorization"
+  provider_arns   = [aws_cognito_user_pool.userpool.arn]
+}
+
+#########
 # API Gateway - Deployment
 #########
 resource "aws_api_gateway_deployment" "deployment" {
@@ -172,8 +187,65 @@ resource "aws_api_gateway_deployment" "deployment" {
   ]
 }
 
+#########
+# API Gateway - Stage
+#########
 resource "aws_api_gateway_stage" "stage" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = var.environment
   deployment_id = aws_api_gateway_deployment.deployment.id
+}
+
+resource "aws_api_gateway_method_settings" "settings" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = aws_api_gateway_stage.stage.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled = true
+  }
+}
+
+#########
+# Cognito - User pool
+#########
+resource "aws_cognito_user_pool" "userpool" {
+  name                = "${local.namespace}-userpool"
+  username_attributes = ["email"]
+  mfa_configuration   = "OFF"
+}
+
+resource "aws_cognito_user_pool_client" "client" {
+  name = "m2m"
+
+  user_pool_id = aws_cognito_user_pool.userpool.id
+
+  generate_secret              = true
+  explicit_auth_flows          = ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  allowed_oauth_flows          = ["client_credentials"]
+  allowed_oauth_scopes         = aws_cognito_resource_server.resource.scope_identifiers
+  supported_identity_providers = ["COGNITO"]
+
+  token_validity_units {
+    access_token  = "minutes"
+    id_token      = "minutes"
+    refresh_token = "days"
+  }
+}
+
+resource "aws_cognito_user_pool_domain" "domain" {
+  domain       = "${local.namespace}-m2m"
+  user_pool_id = aws_cognito_user_pool.userpool.id
+}
+
+resource "aws_cognito_resource_server" "resource" {
+  identifier = "dev"
+  name       = "dev"
+
+  scope {
+    scope_name        = "tasks"
+    scope_description = "tasks"
+  }
+
+  user_pool_id = aws_cognito_user_pool.userpool.id
 }

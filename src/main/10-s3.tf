@@ -206,7 +206,7 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
 }
 
 ########
-# CDN for primary S3 bucket
+# Cloudfront - CDN for primary S3 bucket
 ########
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
@@ -273,5 +273,36 @@ resource "aws_s3_bucket_policy" "example" {
         }
       }
     ]
+  })
+}
+
+########
+# Secret Manager - Cloudfront
+########
+resource "aws_secretsmanager_secret" "cdn_secret_manager" {
+  name        = "${local.namespace}/cloudfront"
+  description = "Cloudfront dns"
+}
+
+resource "aws_secretsmanager_secret_version" "cdn_credentials_version" {
+  secret_id = aws_secretsmanager_secret.cdn_secret_manager.id
+  secret_string = jsonencode({
+    url = "https://${aws_cloudfront_distribution.s3_distribution.domain_name}"
+  })
+}
+
+resource "aws_secretsmanager_secret_policy" "cdn_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.cdn_secret_manager.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        AWS = "${aws_iam_role.eks_cluster.arn}"
+      },
+      Action   = "secretsmanager:GetSecretValue",
+      Resource = "*"
+    }]
   })
 }
