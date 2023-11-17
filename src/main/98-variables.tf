@@ -132,7 +132,6 @@ variable "rds_cluster_name" {
 
 variable "rds_cluster_port" {
   type        = number
-  default     = 5431
   description = "RDS Cluster port."
 }
 
@@ -519,10 +518,22 @@ variable "night_shutdown" {
   description = "Boolean to choose if shutdown EKS and RDS the night"
 }
 
+variable "cdn_cache_policy_id" {
+  type = string
+  # default     = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Cache optimized for S3
+  default     = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Cache disabled
+  description = "S3 optimez cache for CloudFront distribution cache policy"
+}
+
 variable "services" {
   type = map(object({
-    name              = string,
+    name              = string
     ecr_registry_name = string
+    api_path          = string
+    api_uri           = string
+    api_key_required  = bool
+    authorization     = bool
+    api_enabled       = bool
   }))
   description = "Map of Services"
 }
@@ -530,6 +541,11 @@ variable "services" {
 variable "api_gateway_name" {
   type        = string
   description = "Api Gateway name."
+}
+
+variable "api_gateway_key_enabled" {
+  type        = bool
+  description = "If Api Gateway is enabled or not."
 }
 
 variable "tags" {
