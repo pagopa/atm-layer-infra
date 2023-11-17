@@ -226,11 +226,9 @@ resource "aws_cognito_user_pool_client" "client" {
   allowed_oauth_scopes         = aws_cognito_resource_server.resource.scope_identifiers
   supported_identity_providers = ["COGNITO"]
 
-  token_validity_units {
-    access_token  = "minutes"
-    id_token      = "minutes"
-    refresh_token = "days"
-  }
+  refresh_token_validity = 4
+  access_token_validity  = 1
+  id_token_validity      = 1
 }
 
 resource "aws_cognito_user_pool_domain" "domain" {
