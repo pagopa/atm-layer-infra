@@ -125,7 +125,7 @@ k8s_alb_name_int = "pagopa-uat-atm-layer-alb-int"
 k8s_alb_name_ext = "pagopa-uat-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
-k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
+k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_33eeac608dd7ce5e"
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 

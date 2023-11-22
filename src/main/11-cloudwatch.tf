@@ -119,7 +119,7 @@ resource "aws_cloudwatch_dashboard" "api_details" {
         ],
         "period": 300,
         "region": "${var.aws_region}",
-        "title": "GET tasks/ API Error"
+        "title": "GET ${each.value.api_path}/ API Error"
       }
     },
     {
@@ -145,7 +145,7 @@ resource "aws_cloudwatch_dashboard" "api_details" {
         ],
         "period": 300,
         "region": "${var.aws_region}",
-        "title": "POST tasks/ API Error"
+        "title": "POST ${each.value.api_path}/ API Error"
       }
     },
     {
@@ -171,7 +171,7 @@ resource "aws_cloudwatch_dashboard" "api_details" {
         ],
         "period": 300,
         "region": "${var.aws_region}",
-        "title": "PUT tasks/ API Error"
+        "title": "PUT ${each.value.api_path}/ API Error"
       }
     },
     {
@@ -204,7 +204,7 @@ resource "aws_cloudwatch_dashboard" "api_details" {
             { "stat": "Average", "period": 300 }]
         ],
         "region": "${var.aws_region}",
-        "title": "tasks/ API Latency"
+        "title": "${each.value.api_path}/ API Latency"
       }
     }
   ]
