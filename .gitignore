@@ -39,3 +39,6 @@ src/poc/
 .idea/
 
 *.zip
+src/main/lambdas/dev/rds_create_schemas/psycopg2/
+src/main/lambdas/uat/rds_create_schemas/psycopg2/
+src/main/lambdas/prod/rds_create_schemas/psycopg2/

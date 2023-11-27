@@ -237,8 +237,8 @@ resource "aws_cognito_user_pool_domain" "domain" {
 }
 
 resource "aws_cognito_resource_server" "resource" {
-  identifier = "dev"
-  name       = "dev"
+  identifier = var.environment
+  name       = var.environment
 
   scope {
     scope_name        = "tasks"

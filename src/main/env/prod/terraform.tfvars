@@ -94,6 +94,7 @@ rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
 rds_instance_type                   = "db.t4g.medium"
+rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
 redis_cluster_engine_version       = "7.0"
@@ -164,9 +165,9 @@ backup_plan_schedule       = "cron(0 12 * * ? *)"
 backup_plan_lifecycle_days = 2
 backup_selection_name      = "backup-selection"
 
-cloudwatch_rule_turn_off = "cron(0 18 * * ? *)"      # TURN OFF Ogni giorno alle 20:00 Rome
+cloudwatch_rule_turn_off = "cron(0 20 * * ? *)"      # TURN OFF Ogni giorno alle 20:00 Rome
 cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
-night_shutdown           = false
+night_shutdown           = true
 
 services = {
   quarkus_hello_world = {
@@ -175,7 +176,7 @@ services = {
     api_path          = "microservice5",
     api_uri           = "microservice5/{proxy}/",
     api_key_required  = false,
-    authorization     = true,
+    authorization     = false,
     api_enabled       = true
   },
   atm_layer_wf_engine = {
@@ -193,7 +194,7 @@ services = {
     api_path          = "tasks",
     api_uri           = "api/v1/tasks/{proxy}/",
     api_key_required  = false,
-    authorization     = false,
+    authorization     = true,
     api_enabled       = true
   },
   atm_layer_mil_adapter = {
@@ -219,7 +220,7 @@ services = {
     ecr_registry_name = "atm-layer-model",
     api_path          = "model",
     api_uri           = "api/v1/model/{proxy}/",
-    api_key_required  = false,
+    api_key_required  = true,
     authorization     = false,
     api_enabled       = true
   },

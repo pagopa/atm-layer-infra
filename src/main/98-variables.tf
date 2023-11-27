@@ -180,6 +180,12 @@ variable "rds_instance_type" {
   description = "RDS Instance type"
 }
 
+variable "rds_db_schemas" {
+  type        = string
+  default     = ""
+  description = "RDS DB Schemas"
+}
+
 variable "redis_cluster_name" {
   type        = string
   description = "Redis Cluster name."
@@ -494,6 +500,12 @@ variable "backup_selection_name" {
 variable "lambda_function_name" {
   type        = string
   default     = "rds-autoscaling"
+  description = "Lambda function name."
+}
+
+variable "lambda_function_name_create_schema" {
+  type        = string
+  default     = "rds-create-schema"
   description = "Lambda function name."
 }
 

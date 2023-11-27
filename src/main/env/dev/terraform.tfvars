@@ -94,6 +94,7 @@ rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
 rds_instance_type                   = "db.t4g.medium"
+rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
 redis_cluster_engine_version       = "7.0"
@@ -193,7 +194,7 @@ services = {
     api_path          = "tasks",
     api_uri           = "api/v1/tasks/{proxy}/",
     api_key_required  = false,
-    authorization     = false,
+    authorization     = true,
     api_enabled       = true
   },
   atm_layer_mil_adapter = {
@@ -219,7 +220,7 @@ services = {
     ecr_registry_name = "atm-layer-model",
     api_path          = "model",
     api_uri           = "api/v1/model/{proxy}/",
-    api_key_required  = false,
+    api_key_required  = true,
     authorization     = false,
     api_enabled       = true
   },
