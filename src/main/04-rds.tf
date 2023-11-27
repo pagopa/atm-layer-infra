@@ -165,7 +165,6 @@ resource "aws_lambda_function" "rds_create_schemas" {
   runtime          = var.lambda_function_runtime
   filename         = "lambdas/${var.environment}/rds_create_schemas/lambda_function_payload.zip"
   timeout          = 10
-  source_code_hash = filebase64sha256("lambdas/${var.environment}/rds_create_schemas/lambda_function_payload.zip")
 
   vpc_config {
     subnet_ids         = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
