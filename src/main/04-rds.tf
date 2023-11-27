@@ -159,12 +159,12 @@ resource "aws_iam_role_policy" "lambda_vpc_policy" {
 }
 
 resource "aws_lambda_function" "rds_create_schemas" {
-  function_name    = local.lambda_function_name_create_schema
-  role             = aws_iam_role.lambda_role_rds_create_schema.arn
-  handler          = "lambda_function.lambda_handler"
-  runtime          = var.lambda_function_runtime
-  filename         = "lambdas/${var.environment}/rds_create_schemas/lambda_function_payload.zip"
-  timeout          = 10
+  function_name = local.lambda_function_name_create_schema
+  role          = aws_iam_role.lambda_role_rds_create_schema.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_function_runtime
+  filename      = "lambdas/${var.environment}/rds_create_schemas/lambda_function_payload.zip"
+  timeout       = 10
 
   vpc_config {
     subnet_ids         = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
