@@ -213,7 +213,7 @@ services = {
     api_uri           = "api/v1/processes/{proxy}/",
     api_key_required  = false,
     authorization     = false,
-    api_enabled       = true
+    api_enabled       = false
   },
   atm_layer_model = {
     name              = "model",
