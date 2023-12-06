@@ -8,6 +8,8 @@ locals {
 resource "aws_api_gateway_rest_api" "api" {
   name        = local.api_gateway_name
   description = "API Gateway"
+
+  binary_media_types = ["*/*"]
 }
 
 # Following resource needs Internal NLB
