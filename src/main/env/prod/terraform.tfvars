@@ -126,9 +126,11 @@ k8s_alb_name_int = "pagopa-prod-atm-layer-alb-int"
 k8s_alb_name_ext = "pagopa-prod-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
-k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
+k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_42c75f496d1f85dd"
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
+
+cdn_path = "RESOURCE"
 
 kms_keys = {
   backup = {

@@ -209,7 +209,7 @@ resource "aws_api_gateway_method_settings" "settings" {
 }
 
 #########
-# Cognito - User pool
+# Cognito - User pool - M2M
 #########
 resource "aws_cognito_user_pool" "userpool" {
   name                = "${local.namespace}-userpool"
@@ -248,4 +248,33 @@ resource "aws_cognito_resource_server" "resource" {
   }
 
   user_pool_id = aws_cognito_user_pool.userpool.id
+}
+
+#########
+# Cognito - User pool - Backoffice
+#########
+resource "aws_cognito_user_pool" "userpool_backoffice" {
+  name                = "${local.namespace}-backoffice-userpool"
+  username_attributes = ["email"]
+  mfa_configuration   = "OFF"
+}
+
+resource "aws_cognito_user_pool_client" "client_backoffice" {
+  name = "backoffice"
+
+  user_pool_id = aws_cognito_user_pool.userpool_backoffice.id
+
+  allowed_oauth_flows  = ["code", "implicit"]
+  allowed_oauth_scopes = ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"]
+  callback_urls        = ["https://www.example.com/callback"]
+  logout_urls          = ["https://www.example.com/logout"]
+
+  refresh_token_validity = 4
+  access_token_validity  = 1
+  id_token_validity      = 1
+}
+
+resource "aws_cognito_user_pool_domain" "domain_backoffice" {
+  domain       = "${local.namespace}-backoffice"
+  user_pool_id = aws_cognito_user_pool.userpool_backoffice.id
 }

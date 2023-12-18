@@ -212,7 +212,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.s3.bucket_regional_domain_name
     origin_id                = local.s3_name
-    origin_path              = "//RESOURCES"
+    origin_path              = "/${var.cdn_path}"
     origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
   }
 
@@ -265,7 +265,7 @@ resource "aws_s3_bucket_policy" "example" {
           Service = "cloudfront.amazonaws.com"
         }
         Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.s3.arn}//RESOURCES/*"
+        Resource = "${aws_s3_bucket.s3.arn}/${var.cdn_path}/*"
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"

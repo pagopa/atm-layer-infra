@@ -453,6 +453,11 @@ variable "kms_deletion_window_in_days" {
   description = "KMS deletion windows in days."
 }
 
+variable "cdn_path" {
+  type        = string
+  description = "Path where upload S3 object"
+}
+
 variable "kms_keys" {
   type = map(object({
     description     = string

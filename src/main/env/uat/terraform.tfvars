@@ -130,6 +130,8 @@ k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
+cdn_path = "RESOURCE"
+
 kms_keys = {
   backup = {
     description     = "PAGOPA - KMS Backup key 1",
