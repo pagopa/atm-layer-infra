@@ -44,6 +44,8 @@ jobs:
       - name: Read terraform version 
         id: read-version
         run: |
+          export TF_VAR_cognito_google_idp_client_secret=${{ secrets.environment }}
+          export TF_VAR_cognito_google_idp_client_id=${{ secrets.environment }}
           echo "TERRAFORM_VERSION=`cat ../.terraform-version`" >> $GITHUB_ENV
 
       - name: Setup Terraform
