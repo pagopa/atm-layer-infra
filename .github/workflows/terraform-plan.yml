@@ -44,8 +44,6 @@ jobs:
       - name: Read terraform version 
         id: read-version
         run: |
-          export TF_VAR_cognito_google_idp_client_secret=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          export TF_VAR_cognito_google_idp_client_id=${{ secrets.GOOGLE_CLIENT_ID }}
           echo "TERRAFORM_VERSION=`cat ../.terraform-version`" >> $GITHUB_ENV
 
       - name: Setup Terraform
@@ -65,4 +63,6 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
+          export TF_VAR_cognito_google_idp_client_secret=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          export TF_VAR_cognito_google_idp_client_id=${{ secrets.GOOGLE_CLIENT_ID }}
           ./terraform.sh plan ${{ matrix.environment }}
