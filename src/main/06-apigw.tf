@@ -176,17 +176,24 @@ resource "aws_api_gateway_authorizer" "jwt" {
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
-  variables = {
-    deployed_at = "${timestamp()}"
-  }
+  # variables = {
+  #   deployed_at = "${timestamp()}"
+  # }
 
   lifecycle {
     create_before_destroy = true
   }
 
-  depends_on = [
-    aws_api_gateway_integration.root_path_integration_proxy
-  ]
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.root_microservice,
+      aws_api_gateway_resource.root_path_proxy,
+      aws_api_gateway_method.root_microservice_any_proxy,
+      aws_api_gateway_method.root_path_any_proxy,
+      aws_api_gateway_integration.root_microservice_integration_proxy,
+      aws_api_gateway_integration.root_path_integration_proxy,
+    ]))
+  }
 }
 
 #########
@@ -205,6 +212,7 @@ resource "aws_api_gateway_method_settings" "settings" {
 
   settings {
     metrics_enabled = true
+    logging_level   = "OFF"
   }
 }
 
@@ -259,19 +267,54 @@ resource "aws_cognito_user_pool" "userpool_backoffice" {
   mfa_configuration   = "OFF"
 }
 
+resource "aws_cognito_identity_provider" "google" {
+  attribute_mapping = {
+    email    = "email"
+    username = "sub"
+  }
+  idp_identifiers = []
+  provider_details = {
+    attributes_url                = var.cognito_google_attributes_url
+    attributes_url_add_attributes = "true"
+    authorize_scopes              = "profile email"
+    authorize_url                 = var.cognito_google_authorize_url
+    client_id                     = var.cognito_google_idp_client_id
+    client_secret                 = var.cognito_google_idp_client_secret
+    oidc_issuer                   = var.cognito_google_oidc_issuer
+    token_request_method          = "POST"
+    token_url                     = var.cognito_google_token_url
+  }
+  provider_name = "Google"
+  provider_type = "Google"
+  user_pool_id  = aws_cognito_user_pool.userpool_backoffice.id
+}
+
 resource "aws_cognito_user_pool_client" "client_backoffice" {
   name = "backoffice"
 
   user_pool_id = aws_cognito_user_pool.userpool_backoffice.id
 
-  allowed_oauth_flows  = ["code", "implicit"]
-  allowed_oauth_scopes = ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"]
-  callback_urls        = ["https://www.example.com/callback"]
-  logout_urls          = ["https://www.example.com/logout"]
+  allowed_oauth_flows = ["implicit"]
+  allowed_oauth_scopes = [
+    "email", "openid", "profile"
+  ]
+
+  callback_urls = [
+    "https://www.example.com/callback",
+    "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com",
+    "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com/oauth2/idpresponse"
+  ]
+  logout_urls = ["https://www.example.com/logout"]
 
   refresh_token_validity = 4
-  access_token_validity  = 1
-  id_token_validity      = 1
+  access_token_validity  = 60
+  id_token_validity      = 60
+
+  token_validity_units {
+    access_token  = "minutes"
+    id_token      = "minutes"
+    refresh_token = "days"
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "domain_backoffice" {

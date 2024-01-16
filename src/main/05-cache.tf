@@ -56,8 +56,9 @@ resource "aws_elasticache_replication_group" "redis" {
 # Secret Manager - Redis
 ########
 resource "aws_secretsmanager_secret" "redis_secret_manager" {
-  name        = "${local.namespace}/redis/credentials"
-  description = "Redis credentials"
+  name                    = "${local.namespace}/redis/credentials"
+  description             = "Redis credentials"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "redis_credentials_version" {

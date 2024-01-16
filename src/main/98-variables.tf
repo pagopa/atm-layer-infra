@@ -198,8 +198,8 @@ variable "redis_cluster_description" {
 }
 
 variable "redis_cluster_port" {
-  type        = number
-  default     = 6379
+  type        = string
+  default     = "6379"
   description = "Redis Cluster port."
 }
 
@@ -315,6 +315,35 @@ variable "helm_fluent_bit_logretentiondays_cloudwatchlogs" {
 variable "helm_fluent_bit_enabled_elasticsearch" {
   type        = bool
   description = "Helm chart enabled elasticsearch for fluent bit."
+}
+
+variable "helm_metrics_server_name" {
+  type        = string
+  default     = "metrics-server"
+  description = "Helm name for metrics server."
+}
+
+variable "helm_metrics_server_chart_repository" {
+  type        = string
+  default     = "https://kubernetes-sigs.github.io/metrics-server/"
+  description = "Helm chart repository for metrics server."
+}
+
+variable "helm_metrics_server_chart_name" {
+  type        = string
+  default     = "metrics-server"
+  description = "Helm chart name for metrics server."
+}
+
+variable "helm_metrics_server_chart_version" {
+  type        = string
+  description = "Helm chart version for metrics server."
+}
+
+variable "helm_metrics_server_replicas" {
+  type        = number
+  default     = 1
+  description = "Helm chart replicas for metrics server."
 }
 
 variable "helm_csi_secrets_name" {
@@ -563,6 +592,42 @@ variable "api_gateway_name" {
 variable "api_gateway_key_enabled" {
   type        = bool
   description = "If Api Gateway is enabled or not."
+}
+
+variable "cognito_google_attributes_url" {
+  type        = string
+  default     = "https://people.googleapis.com/v1/people/me?personFields="
+  description = "Google Idp att url"
+}
+
+variable "cognito_google_authorize_url" {
+  type        = string
+  default     = "https://accounts.google.com/o/oauth2/v2/auth"
+  description = "Google Idp att url"
+}
+
+variable "cognito_google_oidc_issuer" {
+  type        = string
+  default     = "https://accounts.google.com"
+  description = "Google Idp oidc issuer"
+}
+
+variable "cognito_google_token_url" {
+  type        = string
+  default     = "https://www.googleapis.com/oauth2/v4/token"
+  description = "Google Idp token url"
+}
+
+variable "cognito_google_idp_client_id" {
+  type        = string
+  sensitive   = true
+  description = "Google Idp client id"
+}
+
+variable "cognito_google_idp_client_secret" {
+  type        = string
+  sensitive   = true
+  description = "Google Idp client secret"
 }
 
 variable "tags" {

@@ -111,6 +111,8 @@ helm_fluent_bit_enabled_cloudwatchlogs          = true
 helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
 helm_fluent_bit_enabled_elasticsearch           = false
 
+helm_metrics_server_chart_version = "3.10.0"
+
 helm_csi_secrets_chart_version          = "1.3.4"
 helm_csi_secrets_sync_secret            = true
 helm_csi_secrets_rotation_poll_interval = "10s"
@@ -202,6 +204,24 @@ services = {
   atm_layer_mil_adapter = {
     name              = "mil-adapter",
     ecr_registry_name = "atm-layer-mil-adapter",
+    api_path          = "",
+    api_uri           = "",
+    api_key_required  = false,
+    authorization     = false,
+    api_enabled       = false
+  },
+  atm_layer_mil_authenticator = {
+    name              = "mil-authenticator",
+    ecr_registry_name = "atm-layer-mil-authenticator",
+    api_path          = "",
+    api_uri           = "",
+    api_key_required  = false,
+    authorization     = false,
+    api_enabled       = false
+  },
+  atm_layer_web_console = {
+    name              = "web-console",
+    ecr_registry_name = "atm-layer-web-console",
     api_path          = "",
     api_uri           = "",
     api_key_required  = false,

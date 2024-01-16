@@ -9,11 +9,7 @@ locals {
 resource "aws_s3_bucket" "s3" {
   bucket = local.s3_name
 
-  lifecycle {
-    ignore_changes = [tags_all]
-  }
-
-  tags_all = {}
+  tags_all = var.tags
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3" {
@@ -89,11 +85,7 @@ resource "aws_s3_bucket" "s3_replica" {
   provider = aws.ireland
   bucket   = "${local.s3_name}-replica"
 
-  lifecycle {
-    ignore_changes = [tags_all]
-  }
-
-  tags_all = {}
+  tags_all = var.tags
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_replica" {
