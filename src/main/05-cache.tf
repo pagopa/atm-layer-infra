@@ -19,7 +19,7 @@ resource "aws_security_group_rule" "redis_rule_ingress_1" {
   from_port                = var.redis_cluster_port
   to_port                  = var.redis_cluster_port
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.eks_cluster.id
+  source_security_group_id = aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id
   security_group_id        = aws_security_group.redis.id
 }
 
@@ -28,7 +28,7 @@ resource "aws_security_group_rule" "redis_rule_egress_1" {
   from_port                = 0
   to_port                  = 0
   protocol                 = "-1"
-  source_security_group_id = aws_security_group.eks_cluster.id
+  source_security_group_id = aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id
   security_group_id        = aws_security_group.redis.id
 }
 

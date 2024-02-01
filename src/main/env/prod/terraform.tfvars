@@ -14,46 +14,16 @@ vpc_cidr                 = "10.110.8.0/22"
 vpc_private_subnets_cidr = ["10.110.8.0/24", "10.110.9.0/24", "10.110.10.0/24"]
 vpc_public_subnets_cidr  = ["10.110.11.0/26", "10.110.11.64/26", "10.110.11.128/26"]
 vpc_endpoints = {
-  # sns = {
-  #   name     = "sns"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
-  # backup = {
-  #   name     = "backup"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
-  # ecr_api = {
-  #   name     = "ecr.api"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
   ecr_dkr = {
     name     = "ecr.dkr"
     type     = "Interface"
     priv_dns = true
   },
-  # kms = {
-  #   name     = "kms"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
   secretsmanager = {
     name     = "secretsmanager"
     type     = "Interface"
     priv_dns = true
   },
-  # sqs = {
-  #   name     = "sqs"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
-  # config = {
-  #   name     = "config"
-  #   type     = "Interface"
-  #   priv_dns = true
-  # },
   logs = {
     name     = "logs"
     type     = "Interface"
@@ -83,7 +53,10 @@ eks_addons = {
   },
   vpc-cni = {
     name = "vpc-cni"
-  }
+  },
+  # aws-ebs-csi-driver = {
+  #   name = "aws-ebs-csi-driver"
+  # }
 }
 
 rds_cluster_name                    = "rds"
@@ -112,6 +85,8 @@ helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
 helm_fluent_bit_enabled_elasticsearch           = false
 
 helm_metrics_server_chart_version = "3.10.0"
+
+helm_jaeger_chart_version = "0.74.1"
 
 helm_csi_secrets_chart_version          = "1.3.4"
 helm_csi_secrets_sync_secret            = true
@@ -158,6 +133,14 @@ kms_keys = {
   s3_replica = {
     description     = "PAGOPA - KMS S3 Replica key",
     deletion_window = 10
+  },
+  s3_webconsole_artifacts = {
+    description     = "PAGOPA - KMS S3 WebConsole artifacts key",
+    deletion_window = 10
+  },
+  s3_webconsole = {
+    description     = "PAGOPA - KMS S3 WebConsole key",
+    deletion_window = 10
   }
 }
 
@@ -173,89 +156,145 @@ cloudwatch_rule_turn_off = "cron(0 20 * * ? *)"      # TURN OFF Ogni giorno alle
 cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:00 Rome
 night_shutdown           = true
 
+# Add service here to create ECR and IAM Role for service account
 services = {
   quarkus_hello_world = {
     name              = "helloworld",
-    ecr_registry_name = "helloworld",
-    api_path          = "microservice5",
-    api_uri           = "microservice5/{proxy}/",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = true
+    ecr_registry_name = "helloworld"
   },
   atm_layer_wf_engine = {
     name              = "wf-engine",
-    ecr_registry_name = "atm-layer-wf-engine",
-    api_path          = "",
-    api_uri           = "",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
+    ecr_registry_name = "atm-layer-wf-engine"
   },
   atm_layer_wf_task = {
     name              = "wf-task",
-    ecr_registry_name = "atm-layer-wf-task",
-    api_path          = "tasks",
-    api_uri           = "api/v1/tasks/{proxy}/",
-    api_key_required  = false,
-    authorization     = true,
-    api_enabled       = true
+    ecr_registry_name = "atm-layer-wf-task"
   },
   atm_layer_mil_adapter = {
     name              = "mil-adapter",
-    ecr_registry_name = "atm-layer-mil-adapter",
-    api_path          = "",
-    api_uri           = "",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
+    ecr_registry_name = "atm-layer-mil-adapter"
   },
   atm_layer_mil_authenticator = {
     name              = "mil-authenticator",
-    ecr_registry_name = "atm-layer-mil-authenticator",
-    api_path          = "",
-    api_uri           = "",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
-  },
-  atm_layer_web_console = {
-    name              = "web-console",
-    ecr_registry_name = "atm-layer-web-console",
-    api_path          = "",
-    api_uri           = "",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
+    ecr_registry_name = "atm-layer-mil-authenticator"
   },
   atm_layer_wf_process = {
     name              = "wf-process",
-    ecr_registry_name = "atm-layer-wf-process",
-    api_path          = "processes",
-    api_uri           = "api/v1/processes/{proxy}/",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
+    ecr_registry_name = "atm-layer-wf-process"
   },
   atm_layer_model = {
     name              = "model",
-    ecr_registry_name = "atm-layer-model",
-    api_path          = "model",
-    api_uri           = "api/v1/model/{proxy}/",
-    api_key_required  = true,
-    authorization     = false,
-    api_enabled       = true
+    ecr_registry_name = "atm-layer-model"
   },
   atm_layer_schema = {
     name              = "schema",
-    ecr_registry_name = "atm-layer-schema",
-    api_path          = "",
-    api_uri           = "",
-    api_key_required  = false,
-    authorization     = false,
-    api_enabled       = false
+    ecr_registry_name = "atm-layer-schema"
   }
 }
 
 api_gateway_name        = "api-rest"
 api_gateway_key_enabled = true
+api_gateway_authorizers = {
+  task = {
+    name      = "jwt"
+    user_pool = "jwt"
+  },
+  backoffice = {
+    name      = "jwt-backoffice"
+    user_pool = "jwt-backoffice"
+  }
+}
+
+# Add service here to create API Gateway integrations and Cloudwatch dashboard
+api_gateway_integrations = {
+  quarkus_hello_world = {
+    name             = "helloworld",
+    api_path         = "microservice5",
+    api_uri          = "microservice5/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = ["GET"]
+    authorization    = true,
+    authorizer       = "backoffice",
+    api_enabled      = true
+  },
+  atm_layer_wf_engine = {
+    name             = "wf-engine",
+    api_path         = "",
+    api_uri          = "",
+    api_key_required = false,
+    methods_allowed  = []
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = false
+  },
+  atm_layer_wf_task = {
+    name             = "wf-task",
+    api_path         = "tasks",
+    api_uri          = "api/v1/tasks/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
+    authorization    = true,
+    authorizer       = "task",
+    api_enabled      = true
+  },
+  atm_layer_mil_adapter = {
+    name             = "mil-adapter",
+    api_path         = "",
+    api_uri          = "",
+    api_key_required = false,
+    methods_allowed  = []
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = false
+  },
+  atm_layer_mil_authenticator = {
+    name             = "mil-authenticator",
+    api_path         = "",
+    api_uri          = "",
+    api_key_required = false,
+    methods_allowed  = []
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = false
+  },
+  atm_layer_wf_process = {
+    name             = "wf-process",
+    api_path         = "processes",
+    api_uri          = "api/v1/processes/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = []
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = false
+  },
+  atm_layer_model = {
+    name             = "model",
+    api_path         = "model",
+    api_uri          = "api/v1/model/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = true
+  },
+  atm_layer_model_frontend = {
+    name             = "model-frontend",
+    api_path         = "model-frontend",
+    api_uri          = "api/v1/model/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+    authorization    = true,
+    authorizer       = "backoffice",
+    api_enabled      = true
+  },
+  atm_layer_schema = {
+    name             = "schema",
+    api_path         = "",
+    api_uri          = "",
+    api_key_required = false,
+    methods_allowed  = []
+    authorization    = false,
+    authorizer       = "",
+    api_enabled      = false
+  }
+}

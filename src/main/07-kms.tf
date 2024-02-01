@@ -49,7 +49,7 @@ resource "aws_kms_key" "aws_s3_key" {
 }
 
 resource "aws_kms_alias" "aws_s3_key" {
-  name          = "alias/s3/${local.s3_name}"
+  name          = "alias/s3/${local.s3_name_model}"
   target_key_id = aws_kms_key.aws_s3_key.key_id
 }
 
@@ -84,8 +84,7 @@ resource "aws_kms_key_policy" "aws_s3_key" {
             "aws:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"
           }
         }
-      },
-
+      }
     ]
     Version = "2012-10-17"
   })
@@ -102,3 +101,61 @@ resource "aws_kms_alias" "aws_s3_replica_key" {
   name          = "alias/s3/${local.s3_replica_name}"
   target_key_id = aws_kms_key.aws_s3_replica_key.key_id
 }
+
+resource "aws_kms_key" "aws_s3_webconsole_artifacts_key" {
+  description             = var.kms_keys["s3_webconsole_artifacts"].description
+  deletion_window_in_days = var.kms_keys["s3_webconsole_artifacts"].deletion_window
+}
+
+resource "aws_kms_alias" "aws_s3_webconsole_artifacts_key" {
+  name          = "alias/s3/${local.s3_name_webconsole_artifacts}"
+  target_key_id = aws_kms_key.aws_s3_webconsole_artifacts_key.key_id
+}
+
+resource "aws_kms_key" "aws_s3_webconsole_key" {
+  description             = var.kms_keys["s3_webconsole"].description
+  deletion_window_in_days = var.kms_keys["s3_webconsole"].deletion_window
+}
+
+resource "aws_kms_alias" "aws_s3_webconsole_key" {
+  name          = "alias/s3/${local.s3_name_webconsole}"
+  target_key_id = aws_kms_key.aws_s3_webconsole_key.key_id
+}
+
+resource "aws_kms_key_policy" "aws_s3_webconsole_key" {
+  key_id = aws_kms_key.aws_s3_webconsole_key.key_id
+  policy = jsonencode({
+    Id = "key-default"
+    Statement = [
+      {
+        Action = "kms:*"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${local.account_id}:root"
+        }
+        Resource = "*"
+        Sid      = "Enable IAM User Permissions"
+      },
+      {
+        Action = [
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey*"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Resource = "*"
+        Sid      = "Enable CDN to Decrypt S3 Object"
+        Condition = {
+          StringEquals = {
+            "aws:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_webconsole_distribution.id}"
+          }
+        }
+      }
+    ]
+    Version = "2012-10-17"
+  })
+}
+

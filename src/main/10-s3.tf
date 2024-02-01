@@ -1,13 +1,15 @@
 locals {
-  s3_name         = "${local.namespace}-s3-model"
-  s3_replica_name = "${local.namespace}-s3-model-replica"
+  s3_name_model                = "${local.namespace}-s3-model"
+  s3_name_webconsole           = "${local.namespace}-s3-web-console"
+  s3_name_webconsole_artifacts = "${local.namespace}-s3-web-console-artifacts"
+  s3_replica_name              = "${local.namespace}-s3-model-replica"
 }
 
 ########
-# S3 Bucket
+# S3 Bucket - Model
 ########
 resource "aws_s3_bucket" "s3" {
-  bucket = local.s3_name
+  bucket = local.s3_name_model
 
   tags_all = var.tags
 }
@@ -83,7 +85,7 @@ resource "aws_iam_role_policy_attachment" "eks_pod_1" {
 ########
 resource "aws_s3_bucket" "s3_replica" {
   provider = aws.ireland
-  bucket   = "${local.s3_name}-replica"
+  bucket   = "${local.s3_name_model}-replica"
 
   tags_all = var.tags
 }
@@ -203,21 +205,21 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.s3.bucket_regional_domain_name
-    origin_id                = local.s3_name
+    origin_id                = local.s3_name_model
     origin_path              = "/${var.cdn_path}"
     origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
   }
 
   enabled         = true
   is_ipv6_enabled = true
-  comment         = "CDN for ATM"
+  comment         = "CDN for ATM BMPN"
   http_version    = "http2"
 
   default_cache_behavior {
-    cache_policy_id  = var.cdn_cache_policy_id
+    cache_policy_id  = var.cdn_cache_policy_disabled_id
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = local.s3_name
+    target_origin_id = local.s3_name_model
 
     viewer_protocol_policy = "redirect-to-https"
   }
@@ -296,5 +298,143 @@ resource "aws_secretsmanager_secret_policy" "cdn_secret_manager_policy" {
       Action   = "secretsmanager:GetSecretValue",
       Resource = "*"
     }]
+  })
+}
+
+########
+# S3 Bucket - web console artifacts
+########
+resource "aws_s3_bucket" "s3_webconsole_artifacts" {
+  bucket = local.s3_name_webconsole_artifacts
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_webconsole_artifacts" {
+  bucket = aws_s3_bucket.s3_webconsole_artifacts.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.aws_s3_webconsole_artifacts_key.key_id
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_webconsole_artifacts" {
+  bucket = aws_s3_bucket.s3_webconsole_artifacts.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+########
+# S3 Bucket - web console
+########
+resource "aws_s3_bucket" "s3_webconsole" {
+  bucket = local.s3_name_webconsole
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_webconsole" {
+  bucket = aws_s3_bucket.s3_webconsole.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.aws_s3_webconsole_key.key_id
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_webconsole" {
+  bucket = aws_s3_bucket.s3_webconsole.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+########
+# Cloudfront - CDN for S3 bucket web console
+########
+resource "aws_cloudfront_distribution" "s3_webconsole_distribution" {
+  origin {
+    domain_name              = aws_s3_bucket.s3_webconsole.bucket_regional_domain_name
+    origin_id                = local.s3_name_webconsole
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3_webconsole.id
+  }
+
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "CDN for ATM Web console"
+  http_version    = "http2"
+
+  default_cache_behavior {
+    cache_policy_id  = var.cdn_cache_policy_enabled_id
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_name_webconsole
+
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+      locations        = []
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+  custom_error_response {
+    error_caching_min_ttl = 0
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/webconsole/index.html"
+  }
+
+  custom_error_response {
+    error_caching_min_ttl = 0
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/webconsole/index.html"
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "s3_webconsole" {
+  name                              = "S3WebConsoleOAC"
+  description                       = "S3WebConsoleOAC"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "s3_webconsole_policy" {
+  bucket = aws_s3_bucket.s3_webconsole.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.s3_webconsole.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_webconsole_distribution.id}"
+          }
+        }
+      }
+    ]
   })
 }

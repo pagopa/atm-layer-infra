@@ -346,6 +346,65 @@ variable "helm_metrics_server_replicas" {
   description = "Helm chart replicas for metrics server."
 }
 
+variable "helm_jaeger_name" {
+  type        = string
+  default     = "jaeger"
+  description = "Helm name for metrics server."
+}
+
+variable "helm_jaeger_chart_repository" {
+  type        = string
+  default     = "https://jaegertracing.github.io/helm-charts"
+  description = "Helm chart repository for metrics server."
+}
+
+variable "helm_jaeger_chart_name" {
+  type        = string
+  default     = "jaeger"
+  description = "Helm chart name for metrics server."
+}
+
+variable "helm_jaeger_chart_version" {
+  type        = string
+  description = "Helm chart version for metrics server."
+}
+
+variable "helm_jaeger_allinone_enabled" {
+  type        = string
+  default     = "true"
+  description = "Helm chart replicas for metrics server."
+}
+
+variable "helm_jaeger_provisionDataStore_cassandra" {
+  type        = string
+  default     = "false"
+  description = "Helm chart replicas for metrics server."
+}
+
+variable "helm_jaeger_storage_type" {
+  type        = string
+  default     = "none"
+  description = "Helm chart replicas for metrics server."
+}
+
+variable "helm_jaeger_agent_enabled" {
+  type        = string
+  default     = "false"
+  description = "Helm chart replicas for metrics server."
+}
+
+variable "helm_jaeger_collector_enabled" {
+  type        = string
+  default     = "false"
+  description = "Helm chart replicas for metrics server."
+}
+
+variable "helm_jaeger_query_enabled" {
+  type        = string
+  default     = "false"
+  description = "Helm chart replicas for metrics server."
+}
+
 variable "helm_csi_secrets_name" {
   type        = string
   default     = "csi-secrets-store"
@@ -564,22 +623,22 @@ variable "night_shutdown" {
   description = "Boolean to choose if shutdown EKS and RDS the night"
 }
 
-variable "cdn_cache_policy_id" {
-  type = string
-  # default     = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Cache optimized for S3
+variable "cdn_cache_policy_disabled_id" {
+  type        = string
   default     = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Cache disabled
-  description = "S3 optimez cache for CloudFront distribution cache policy"
+  description = "Cache disabled for CloudFront distribution cache policy"
+}
+
+variable "cdn_cache_policy_enabled_id" {
+  type        = string
+  default     = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Cache optimized for S3
+  description = "S3 optimized cache for CloudFront distribution cache policy"
 }
 
 variable "services" {
   type = map(object({
     name              = string
     ecr_registry_name = string
-    api_path          = string
-    api_uri           = string
-    api_key_required  = bool
-    authorization     = bool
-    api_enabled       = bool
   }))
   description = "Map of Services"
 }
@@ -592,6 +651,28 @@ variable "api_gateway_name" {
 variable "api_gateway_key_enabled" {
   type        = bool
   description = "If Api Gateway is enabled or not."
+}
+
+variable "api_gateway_authorizers" {
+  type = map(object({
+    name      = string
+    user_pool = string
+  }))
+  description = "Map of Api gateway authorizers"
+}
+
+variable "api_gateway_integrations" {
+  type = map(object({
+    name             = string
+    api_path         = string
+    api_uri          = string
+    api_key_required = bool
+    methods_allowed  = list(string)
+    authorization    = bool
+    authorizer       = string
+    api_enabled      = bool
+  }))
+  description = "Map of API gateway integrations for services"
 }
 
 variable "cognito_google_attributes_url" {

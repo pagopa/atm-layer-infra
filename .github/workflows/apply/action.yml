@@ -38,4 +38,6 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         e=${{ inputs.env }}
+        export TF_VAR_cognito_google_idp_client_secret=${{ secrets.GOOGLE_CLIENT_SECRET }}
+        export TF_VAR_cognito_google_idp_client_id=${{ secrets.GOOGLE_CLIENT_ID }}
         ./terraform.sh apply ${e%"_w"} -auto-approve

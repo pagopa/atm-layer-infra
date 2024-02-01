@@ -1,5 +1,13 @@
 locals {
   api_gateway_name = "${local.namespace}-${var.api_gateway_name}"
+  user_pools = {
+    "jwt"            = "${aws_cognito_user_pool.userpool.arn}"
+    "jwt-backoffice" = "${aws_cognito_user_pool.userpool_backoffice.arn}"
+  }
+  api_scopes = {
+    "task"       = aws_cognito_resource_server.resource.scope_identifiers
+    "backoffice" = []
+  }
 }
 
 #########
@@ -9,7 +17,11 @@ resource "aws_api_gateway_rest_api" "api" {
   name        = local.api_gateway_name
   description = "API Gateway"
 
-  binary_media_types = ["*/*"]
+  binary_media_types = ["multipart/form-data"]
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
 }
 
 # Following resource needs Internal NLB
@@ -45,7 +57,7 @@ resource "aws_api_gateway_resource" "root_v1" {
 # API Gateway - root resource path for microservice/
 #########
 resource "aws_api_gateway_resource" "root_microservice" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled }
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_resource.root_v1.id
@@ -53,14 +65,14 @@ resource "aws_api_gateway_resource" "root_microservice" {
 }
 
 resource "aws_api_gateway_method" "root_microservice_any_proxy" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "ANY") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_microservice[each.key].id
   http_method          = "ANY"
   authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
-  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt.id : ""
-  authorization_scopes = each.value.authorization ? aws_cognito_resource_server.resource.scope_identifiers : []
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
+  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
   api_key_required     = each.value.api_key_required
 
   request_parameters = {
@@ -69,7 +81,7 @@ resource "aws_api_gateway_method" "root_microservice_any_proxy" {
 }
 
 resource "aws_api_gateway_integration" "root_microservice_integration_proxy" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "ANY") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_microservice[each.key].id
@@ -92,22 +104,25 @@ resource "aws_api_gateway_integration" "root_microservice_integration_proxy" {
 # API Gateway - {proxy+} path for microservice/{proxy+}
 #########
 resource "aws_api_gateway_resource" "root_path_proxy" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled }
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_resource.root_microservice[each.key].id
   path_part   = "{proxy+}"
 }
 
-resource "aws_api_gateway_method" "root_path_any_proxy" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+#########
+# API Gateway - {proxy+} METHOD GET for microservice/{proxy+}
+########
+resource "aws_api_gateway_method" "root_path_proxy_method_request_get" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "GET") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
-  http_method          = "ANY"
+  http_method          = "GET"
   authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
-  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt.id : ""
-  authorization_scopes = each.value.authorization ? aws_cognito_resource_server.resource.scope_identifiers : []
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
+  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
   api_key_required     = each.value.api_key_required
 
   request_parameters = {
@@ -115,13 +130,13 @@ resource "aws_api_gateway_method" "root_path_any_proxy" {
   }
 }
 
-resource "aws_api_gateway_integration" "root_path_integration_proxy" {
-  for_each = { for k, v in var.services : k => v if v.api_enabled }
+resource "aws_api_gateway_integration" "root_path_proxy_integration_request_get" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "GET") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
-  http_method             = aws_api_gateway_method.root_path_any_proxy[each.key].http_method
-  integration_http_method = "ANY"
+  http_method             = aws_api_gateway_method.root_path_proxy_method_request_get[each.key].http_method
+  integration_http_method = "GET"
   type                    = "HTTP_PROXY"
   connection_id           = aws_api_gateway_vpc_link.vpc_link.id
   connection_type         = "VPC_LINK"
@@ -132,6 +147,208 @@ resource "aws_api_gateway_integration" "root_path_integration_proxy" {
 
   tls_config {
     insecure_skip_verification = true
+  }
+}
+
+#########
+# API Gateway - {proxy+} METHOD POST for microservice/{proxy+}
+########
+resource "aws_api_gateway_method" "root_path_proxy_method_request_post" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "POST") }
+
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = "POST"
+  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
+  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
+  api_key_required     = each.value.api_key_required
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "root_path_proxy_integration_request_post" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "POST") }
+
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method             = aws_api_gateway_method.root_path_proxy_method_request_post[each.key].http_method
+  integration_http_method = "POST"
+  type                    = "HTTP_PROXY"
+  connection_id           = aws_api_gateway_vpc_link.vpc_link.id
+  connection_type         = "VPC_LINK"
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+  uri = "http://${aws_lb.nlb_int.dns_name}/${each.value.api_uri}"
+
+  tls_config {
+    insecure_skip_verification = true
+  }
+}
+
+#########
+# API Gateway - {proxy+} METHOD PUT for microservice/{proxy+}
+########
+resource "aws_api_gateway_method" "root_path_proxy_method_request_put" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "PUT") }
+
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = "PUT"
+  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
+  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
+  api_key_required     = each.value.api_key_required
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "root_path_proxy_integration_request_put" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "PUT") }
+
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method             = aws_api_gateway_method.root_path_proxy_method_request_put[each.key].http_method
+  integration_http_method = "PUT"
+  type                    = "HTTP_PROXY"
+  connection_id           = aws_api_gateway_vpc_link.vpc_link.id
+  connection_type         = "VPC_LINK"
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+  uri = "http://${aws_lb.nlb_int.dns_name}/${each.value.api_uri}"
+
+  tls_config {
+    insecure_skip_verification = true
+  }
+}
+
+#########
+# API Gateway - {proxy+} METHOD DELETE for microservice/{proxy+}
+########
+resource "aws_api_gateway_method" "root_path_proxy_method_request_delete" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "DELETE") }
+
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = "DELETE"
+  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
+  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
+  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
+  api_key_required     = each.value.api_key_required
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "root_path_proxy_integration_request_delete" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "DELETE") }
+
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method             = aws_api_gateway_method.root_path_proxy_method_request_delete[each.key].http_method
+  integration_http_method = "DELETE"
+  type                    = "HTTP_PROXY"
+  connection_id           = aws_api_gateway_vpc_link.vpc_link.id
+  connection_type         = "VPC_LINK"
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+  uri = "http://${aws_lb.nlb_int.dns_name}/${each.value.api_uri}"
+
+  tls_config {
+    insecure_skip_verification = true
+  }
+}
+
+#########
+# API Gateway - {proxy+} METHOD OPTIONS for microservice/{proxy+}
+########
+resource "aws_api_gateway_method" "root_path_proxy_method_request_options" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = "OPTIONS"
+  authorization        = "NONE"
+  authorizer_id        = ""
+  authorization_scopes = []
+  api_key_required     = false
+}
+
+resource "aws_api_gateway_method_response" "root_path_proxy_method_response_options" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method = aws_api_gateway_method.root_path_proxy_method_request_options[each.key].http_method
+  status_code = 200
+
+  response_models = {
+    "application/json"                = "Empty"
+    "application/json; charset=UTF-8" = "Empty"
+    "multipart/form-data"             = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration" "root_path_proxy_integration_request_options" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method          = aws_api_gateway_method.root_path_proxy_method_request_options[each.key].http_method
+  type                 = "MOCK"
+  cache_key_parameters = []
+  passthrough_behavior = "WHEN_NO_MATCH"
+
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+    "application/json; charset=UTF-8" = jsonencode({
+      statusCode = 200
+    })
+    "multipart/form-data" = jsonencode({
+      statusCode = 200
+    })
+  }
+}
+
+resource "aws_api_gateway_integration_response" "root_path_proxy_integration_response_options" {
+  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.root_path_proxy[each.key].id
+  http_method = aws_api_gateway_method.root_path_proxy_method_request_options[each.key].http_method
+  status_code = aws_api_gateway_method_response.root_path_proxy_method_response_options[each.key].status_code
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+    "application/json; charset=UTF-8" = jsonencode({
+      statusCode = 200
+    })
+    "multipart/form-data" = jsonencode({
+      statusCode = 200
+    })
   }
 }
 
@@ -163,11 +380,13 @@ resource "aws_api_gateway_usage_plan_key" "api_usage_plan_key" {
 # API Gateway - Authorizer
 #########
 resource "aws_api_gateway_authorizer" "jwt" {
-  name            = "jwt"
+  for_each = var.api_gateway_authorizers
+
+  name            = each.value.name
   rest_api_id     = aws_api_gateway_rest_api.api.id
   type            = "COGNITO_USER_POOLS"
   identity_source = "method.request.header.Authorization"
-  provider_arns   = [aws_cognito_user_pool.userpool.arn]
+  provider_arns   = [lookup(local.user_pools, each.value.user_pool, local.user_pools["jwt"])]
 }
 
 #########
@@ -175,10 +394,6 @@ resource "aws_api_gateway_authorizer" "jwt" {
 #########
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-
-  # variables = {
-  #   deployed_at = "${timestamp()}"
-  # }
 
   lifecycle {
     create_before_destroy = true
@@ -188,10 +403,21 @@ resource "aws_api_gateway_deployment" "deployment" {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.root_microservice,
       aws_api_gateway_resource.root_path_proxy,
+
       aws_api_gateway_method.root_microservice_any_proxy,
-      aws_api_gateway_method.root_path_any_proxy,
+      aws_api_gateway_method.root_path_proxy_method_request_get,
+      aws_api_gateway_method.root_path_proxy_method_request_post,
+      aws_api_gateway_method.root_path_proxy_method_request_put,
+      aws_api_gateway_method.root_path_proxy_method_request_delete,
+      aws_api_gateway_method.root_path_proxy_method_request_options,
+
       aws_api_gateway_integration.root_microservice_integration_proxy,
-      aws_api_gateway_integration.root_path_integration_proxy,
+      aws_api_gateway_integration.root_path_proxy_integration_request_get,
+      aws_api_gateway_integration.root_path_proxy_integration_request_post,
+      aws_api_gateway_integration.root_path_proxy_integration_request_put,
+      aws_api_gateway_integration.root_path_proxy_integration_request_delete,
+      aws_api_gateway_integration.root_path_proxy_integration_request_options,
+      aws_api_gateway_integration_response.root_path_proxy_integration_response_options
     ]))
   }
 }
@@ -212,7 +438,7 @@ resource "aws_api_gateway_method_settings" "settings" {
 
   settings {
     metrics_enabled = true
-    logging_level   = "OFF"
+    logging_level   = "INFO"
   }
 }
 
@@ -276,7 +502,7 @@ resource "aws_cognito_identity_provider" "google" {
   provider_details = {
     attributes_url                = var.cognito_google_attributes_url
     attributes_url_add_attributes = "true"
-    authorize_scopes              = "profile email"
+    authorize_scopes              = "profile email openid"
     authorize_url                 = var.cognito_google_authorize_url
     client_id                     = var.cognito_google_idp_client_id
     client_secret                 = var.cognito_google_idp_client_secret
@@ -300,19 +526,17 @@ resource "aws_cognito_user_pool_client" "client_backoffice" {
   ]
 
   callback_urls = [
-    "https://www.example.com/callback",
     "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com",
     "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com/oauth2/idpresponse"
   ]
-  logout_urls = ["https://www.example.com/logout"]
 
-  refresh_token_validity = 4
-  access_token_validity  = 60
-  id_token_validity      = 60
+  refresh_token_validity = 30
+  access_token_validity  = 1
+  id_token_validity      = 1
 
   token_validity_units {
-    access_token  = "minutes"
-    id_token      = "minutes"
+    access_token  = "days"
+    id_token      = "days"
     refresh_token = "days"
   }
 }
