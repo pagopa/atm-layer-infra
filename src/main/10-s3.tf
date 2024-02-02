@@ -175,11 +175,6 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
     id       = "ReplicateToIreland"
     status   = "Enabled"
     priority = 0
-    delete_marker_replication {
-      status = "Enabled"
-    }
-
-    filter {}
 
     destination {
       bucket        = aws_s3_bucket.s3_replica.arn
