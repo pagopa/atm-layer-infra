@@ -47,9 +47,9 @@ resource "aws_eks_cluster" "eks_cluster" {
       aws_subnet.priv_subnet_2.id,
       aws_subnet.priv_subnet_3.id
     ]
-    security_group_ids = [aws_security_group.eks_cluster.id]
+    security_group_ids      = [aws_security_group.eks_cluster.id]
     endpoint_private_access = false
-    endpoint_public_access = true
+    endpoint_public_access  = true
   }
 
   encryption_config {

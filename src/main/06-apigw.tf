@@ -32,7 +32,7 @@ resource "aws_api_gateway_account" "api_log" {
 }
 
 resource "aws_iam_role" "api_log" {
-  name                = "apigw-logs"
+  name = "apigw-logs"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -471,7 +471,7 @@ resource "aws_api_gateway_method_settings" "settings" {
     logging_level   = "INFO"
   }
 
-  depends_on = [ aws_api_gateway_account.api_log ]
+  depends_on = [aws_api_gateway_account.api_log]
 }
 
 #########
