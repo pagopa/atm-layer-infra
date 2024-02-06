@@ -48,8 +48,8 @@ resource "aws_eks_cluster" "eks_cluster" {
       aws_subnet.priv_subnet_3.id
     ]
     security_group_ids = [aws_security_group.eks_cluster.id]
-    # endpoint_private_access = true
-    # endpoint_public_access = false
+    endpoint_private_access = false
+    endpoint_public_access = true
   }
 
   encryption_config {
@@ -63,7 +63,8 @@ resource "aws_eks_cluster" "eks_cluster" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_1,
     aws_iam_role_policy_attachment.eks_cluster_2,
-    aws_cloudwatch_log_group.log
+    aws_cloudwatch_log_group.logs,
+    aws_cloudwatch_log_group.cluster
   ]
 }
 
@@ -519,9 +520,18 @@ resource "aws_iam_role_policy_attachment" "eks_nodes_6" {
 #######
 # Cloudwatch - K8s
 ########
-resource "aws_cloudwatch_log_group" "log" {
+resource "aws_cloudwatch_log_group" "cluster" {
   name              = "/aws/eks/${local.eks_cluster_name}/cluster"
   retention_in_days = var.eks_log_retention_in_days
+
+  tags_all = var.tags
+}
+
+resource "aws_cloudwatch_log_group" "logs" {
+  name              = "/aws/eks/${local.eks_cluster_name}/logs"
+  retention_in_days = var.eks_log_retention_in_days
+
+  tags_all = var.tags
 }
 
 ########

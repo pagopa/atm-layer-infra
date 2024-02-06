@@ -24,6 +24,36 @@ resource "aws_api_gateway_rest_api" "api" {
   }
 }
 
+#########
+# API Gateway - IAM Role for logs
+#########
+resource "aws_api_gateway_account" "api_log" {
+  cloudwatch_role_arn = aws_iam_role.api_log.arn
+}
+
+resource "aws_iam_role" "api_log" {
+  name                = "apigw-logs"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "apigateway.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "api_log" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  role       = aws_iam_role.api_log.name
+}
+
 # Following resource needs Internal NLB
 
 #########
@@ -440,6 +470,8 @@ resource "aws_api_gateway_method_settings" "settings" {
     metrics_enabled = true
     logging_level   = "INFO"
   }
+
+  depends_on = [ aws_api_gateway_account.api_log ]
 }
 
 #########
@@ -527,7 +559,8 @@ resource "aws_cognito_user_pool_client" "client_backoffice" {
 
   callback_urls = [
     "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com",
-    "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com/oauth2/idpresponse"
+    "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com/oauth2/idpresponse",
+    "https://${aws_cloudfront_distribution.s3_webconsole_distribution.domain_name}/webconsole/login/callback"
   ]
 
   refresh_token_validity = 30
