@@ -159,36 +159,31 @@ night_shutdown           = true
 # Add service here to create ECR and IAM Role for service account
 services = {
   quarkus_hello_world = {
-    name              = "helloworld",
-    ecr_registry_name = "helloworld"
+    name = "helloworld"
   },
   atm_layer_wf_engine = {
-    name              = "wf-engine",
-    ecr_registry_name = "atm-layer-wf-engine"
+    name = "wf-engine"
   },
   atm_layer_wf_task = {
-    name              = "wf-task",
-    ecr_registry_name = "atm-layer-wf-task"
+    name = "wf-task"
   },
   atm_layer_mil_adapter = {
-    name              = "mil-adapter",
-    ecr_registry_name = "atm-layer-mil-adapter"
+    name = "mil-adapter"
   },
   atm_layer_mil_authenticator = {
-    name              = "mil-authenticator",
-    ecr_registry_name = "atm-layer-mil-authenticator"
+    name = "mil-authenticator"
   },
   atm_layer_wf_process = {
-    name              = "wf-process",
-    ecr_registry_name = "atm-layer-wf-process"
+    name = "wf-process"
   },
   atm_layer_model = {
-    name              = "model",
-    ecr_registry_name = "atm-layer-model"
+    name = "model"
   },
   atm_layer_schema = {
-    name              = "schema",
-    ecr_registry_name = "atm-layer-schema"
+    name = "schema"
+  },
+  atm_layer_console_service = {
+    name = "console-service"
   }
 }
 
@@ -196,19 +191,16 @@ api_gateway_name        = "api-rest"
 api_gateway_key_enabled = true
 api_gateway_authorizers = {
   task = {
-    name      = "jwt"
-    user_pool = "jwt"
+    name = "jwt"
   },
   backoffice = {
-    name      = "jwt-backoffice"
-    user_pool = "jwt-backoffice"
+    name = "jwt-backoffice"
   }
 }
 
 # Add service here to create API Gateway integrations and Cloudwatch dashboard
 api_gateway_integrations = {
   quarkus_hello_world = {
-    name             = "helloworld",
     api_path         = "microservice5",
     api_uri          = "microservice5/{proxy}/",
     api_key_required = false,
@@ -217,18 +209,7 @@ api_gateway_integrations = {
     authorizer       = "backoffice",
     api_enabled      = true
   },
-  atm_layer_wf_engine = {
-    name             = "wf-engine",
-    api_path         = "",
-    api_uri          = "",
-    api_key_required = false,
-    methods_allowed  = []
-    authorization    = false,
-    authorizer       = "",
-    api_enabled      = false
-  },
   atm_layer_wf_task = {
-    name             = "wf-task",
     api_path         = "tasks",
     api_uri          = "api/v1/tasks/{proxy}/",
     api_key_required = false,
@@ -237,38 +218,7 @@ api_gateway_integrations = {
     authorizer       = "task",
     api_enabled      = true
   },
-  atm_layer_mil_adapter = {
-    name             = "mil-adapter",
-    api_path         = "",
-    api_uri          = "",
-    api_key_required = false,
-    methods_allowed  = []
-    authorization    = false,
-    authorizer       = "",
-    api_enabled      = false
-  },
-  atm_layer_mil_authenticator = {
-    name             = "mil-authenticator",
-    api_path         = "",
-    api_uri          = "",
-    api_key_required = false,
-    methods_allowed  = []
-    authorization    = false,
-    authorizer       = "",
-    api_enabled      = false
-  },
-  atm_layer_wf_process = {
-    name             = "wf-process",
-    api_path         = "processes",
-    api_uri          = "api/v1/processes/{proxy}/",
-    api_key_required = false,
-    methods_allowed  = []
-    authorization    = false,
-    authorizer       = "",
-    api_enabled      = false
-  },
   atm_layer_model = {
-    name             = "model",
     api_path         = "model",
     api_uri          = "api/v1/model/{proxy}/",
     api_key_required = false,
@@ -277,24 +227,13 @@ api_gateway_integrations = {
     authorizer       = "",
     api_enabled      = true
   },
-  atm_layer_model_frontend = {
-    name             = "model-frontend",
-    api_path         = "model-frontend",
-    api_uri          = "api/v1/model/{proxy}/",
+  atm_layer_console_service = {
+    api_path         = "console-service",
+    api_uri          = "api/v1/console-service/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = true,
+    authorization    = false,
     authorizer       = "backoffice",
     api_enabled      = true
-  },
-  atm_layer_schema = {
-    name             = "schema",
-    api_path         = "",
-    api_uri          = "",
-    api_key_required = false,
-    methods_allowed  = []
-    authorization    = false,
-    authorizer       = "",
-    api_enabled      = false
   }
 }

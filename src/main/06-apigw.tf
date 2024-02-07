@@ -416,7 +416,7 @@ resource "aws_api_gateway_authorizer" "jwt" {
   rest_api_id     = aws_api_gateway_rest_api.api.id
   type            = "COGNITO_USER_POOLS"
   identity_source = "method.request.header.Authorization"
-  provider_arns   = [lookup(local.user_pools, each.value.user_pool, local.user_pools["jwt"])]
+  provider_arns   = [lookup(local.user_pools, each.value.name, local.user_pools["jwt"])]
 }
 
 #########

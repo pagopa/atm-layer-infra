@@ -637,8 +637,7 @@ variable "cdn_cache_policy_enabled_id" {
 
 variable "services" {
   type = map(object({
-    name              = string
-    ecr_registry_name = string
+    name = string
   }))
   description = "Map of Services"
 }
@@ -655,15 +654,13 @@ variable "api_gateway_key_enabled" {
 
 variable "api_gateway_authorizers" {
   type = map(object({
-    name      = string
-    user_pool = string
+    name = string
   }))
   description = "Map of Api gateway authorizers"
 }
 
 variable "api_gateway_integrations" {
   type = map(object({
-    name             = string
     api_path         = string
     api_uri          = string
     api_key_required = bool
