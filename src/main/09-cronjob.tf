@@ -124,7 +124,7 @@ resource "aws_lambda_permission" "allow_on_cloudwatch" {
 }
 
 ########
-# [dev] Autoscaling scheduled for EKS Node Group
+# Autoscaling scheduled for EKS Node Group
 ########
 resource "aws_autoscaling_schedule" "scale_down" {
   count = var.night_shutdown == true ? 1 : 0

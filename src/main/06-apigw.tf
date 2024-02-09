@@ -87,54 +87,18 @@ resource "aws_api_gateway_resource" "root_v1" {
 # API Gateway - root resource path for microservice/
 #########
 resource "aws_api_gateway_resource" "root_microservice" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled }
+  for_each = var.api_gateway_integrations
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_resource.root_v1.id
   path_part   = each.value.api_path
 }
 
-resource "aws_api_gateway_method" "root_microservice_any_proxy" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "ANY") }
-
-  rest_api_id          = aws_api_gateway_rest_api.api.id
-  resource_id          = aws_api_gateway_resource.root_microservice[each.key].id
-  http_method          = "ANY"
-  authorization        = each.value.authorization ? "COGNITO_USER_POOLS" : "NONE"
-  authorizer_id        = each.value.authorization ? aws_api_gateway_authorizer.jwt[each.value.authorizer].id : ""
-  authorization_scopes = each.value.authorization ? local.api_scopes[each.value.authorizer] : []
-  api_key_required     = each.value.api_key_required
-
-  request_parameters = {
-    "method.request.path.proxy" = true
-  }
-}
-
-resource "aws_api_gateway_integration" "root_microservice_integration_proxy" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "ANY") }
-
-  rest_api_id             = aws_api_gateway_rest_api.api.id
-  resource_id             = aws_api_gateway_resource.root_microservice[each.key].id
-  http_method             = aws_api_gateway_method.root_microservice_any_proxy[each.key].http_method
-  integration_http_method = "ANY"
-  type                    = "HTTP_PROXY"
-  connection_id           = aws_api_gateway_vpc_link.vpc_link.id
-  connection_type         = "VPC_LINK"
-  request_parameters = {
-    "integration.request.path.proxy" = "method.request.path.proxy"
-  }
-  uri = "http://${aws_lb.nlb_int.dns_name}/${each.value.api_uri}"
-
-  tls_config {
-    insecure_skip_verification = true
-  }
-}
-
 #########
 # API Gateway - {proxy+} path for microservice/{proxy+}
 #########
 resource "aws_api_gateway_resource" "root_path_proxy" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled }
+  for_each = var.api_gateway_integrations
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_resource.root_microservice[each.key].id
@@ -145,7 +109,7 @@ resource "aws_api_gateway_resource" "root_path_proxy" {
 # API Gateway - {proxy+} METHOD GET for microservice/{proxy+}
 ########
 resource "aws_api_gateway_method" "root_path_proxy_method_request_get" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "GET") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "GET") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -161,7 +125,7 @@ resource "aws_api_gateway_method" "root_path_proxy_method_request_get" {
 }
 
 resource "aws_api_gateway_integration" "root_path_proxy_integration_request_get" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "GET") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "GET") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -184,7 +148,7 @@ resource "aws_api_gateway_integration" "root_path_proxy_integration_request_get"
 # API Gateway - {proxy+} METHOD POST for microservice/{proxy+}
 ########
 resource "aws_api_gateway_method" "root_path_proxy_method_request_post" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "POST") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "POST") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -200,7 +164,7 @@ resource "aws_api_gateway_method" "root_path_proxy_method_request_post" {
 }
 
 resource "aws_api_gateway_integration" "root_path_proxy_integration_request_post" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "POST") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "POST") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -223,7 +187,7 @@ resource "aws_api_gateway_integration" "root_path_proxy_integration_request_post
 # API Gateway - {proxy+} METHOD PUT for microservice/{proxy+}
 ########
 resource "aws_api_gateway_method" "root_path_proxy_method_request_put" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "PUT") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "PUT") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -239,7 +203,7 @@ resource "aws_api_gateway_method" "root_path_proxy_method_request_put" {
 }
 
 resource "aws_api_gateway_integration" "root_path_proxy_integration_request_put" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "PUT") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "PUT") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -262,7 +226,7 @@ resource "aws_api_gateway_integration" "root_path_proxy_integration_request_put"
 # API Gateway - {proxy+} METHOD DELETE for microservice/{proxy+}
 ########
 resource "aws_api_gateway_method" "root_path_proxy_method_request_delete" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "DELETE") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "DELETE") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -278,7 +242,7 @@ resource "aws_api_gateway_method" "root_path_proxy_method_request_delete" {
 }
 
 resource "aws_api_gateway_integration" "root_path_proxy_integration_request_delete" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "DELETE") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "DELETE") }
 
   rest_api_id             = aws_api_gateway_rest_api.api.id
   resource_id             = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -301,7 +265,7 @@ resource "aws_api_gateway_integration" "root_path_proxy_integration_request_dele
 # API Gateway - {proxy+} METHOD OPTIONS for microservice/{proxy+}
 ########
 resource "aws_api_gateway_method" "root_path_proxy_method_request_options" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "OPTIONS") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -313,7 +277,7 @@ resource "aws_api_gateway_method" "root_path_proxy_method_request_options" {
 }
 
 resource "aws_api_gateway_method_response" "root_path_proxy_method_response_options" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "OPTIONS") }
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -334,7 +298,7 @@ resource "aws_api_gateway_method_response" "root_path_proxy_method_response_opti
 }
 
 resource "aws_api_gateway_integration" "root_path_proxy_integration_request_options" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "OPTIONS") }
 
   rest_api_id          = aws_api_gateway_rest_api.api.id
   resource_id          = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -357,7 +321,7 @@ resource "aws_api_gateway_integration" "root_path_proxy_integration_request_opti
 }
 
 resource "aws_api_gateway_integration_response" "root_path_proxy_integration_response_options" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled && contains(v.methods_allowed, "OPTIONS") }
+  for_each = { for k, v in var.api_gateway_integrations : k => v if contains(v.methods_allowed, "OPTIONS") }
 
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.root_path_proxy[each.key].id
@@ -434,14 +398,12 @@ resource "aws_api_gateway_deployment" "deployment" {
       aws_api_gateway_resource.root_microservice,
       aws_api_gateway_resource.root_path_proxy,
 
-      aws_api_gateway_method.root_microservice_any_proxy,
       aws_api_gateway_method.root_path_proxy_method_request_get,
       aws_api_gateway_method.root_path_proxy_method_request_post,
       aws_api_gateway_method.root_path_proxy_method_request_put,
       aws_api_gateway_method.root_path_proxy_method_request_delete,
       aws_api_gateway_method.root_path_proxy_method_request_options,
 
-      aws_api_gateway_integration.root_microservice_integration_proxy,
       aws_api_gateway_integration.root_path_proxy_integration_request_get,
       aws_api_gateway_integration.root_path_proxy_integration_request_post,
       aws_api_gateway_integration.root_path_proxy_integration_request_put,

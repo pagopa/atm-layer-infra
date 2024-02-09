@@ -206,8 +206,7 @@ api_gateway_integrations = {
     api_key_required = false,
     methods_allowed  = ["GET"]
     authorization    = true,
-    authorizer       = "backoffice",
-    api_enabled      = true
+    authorizer       = "backoffice"
   },
   atm_layer_wf_task = {
     api_path         = "tasks",
@@ -215,25 +214,22 @@ api_gateway_integrations = {
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
     authorization    = true,
-    authorizer       = "task",
-    api_enabled      = true
+    authorizer       = "task"
   },
   atm_layer_model = {
     api_path         = "model",
     api_uri          = "api/v1/model/{proxy}/",
-    api_key_required = false,
+    api_key_required = true,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
     authorization    = false,
-    authorizer       = "",
-    api_enabled      = true
+    authorizer       = ""
   },
   atm_layer_console_service = {
     api_path         = "console-service",
     api_uri          = "api/v1/console-service/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = "backoffice",
-    api_enabled      = true
+    authorization    = true,
+    authorizer       = "backoffice"
   }
 }

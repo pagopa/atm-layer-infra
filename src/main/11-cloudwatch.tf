@@ -89,7 +89,7 @@ EOF
 }
 
 resource "aws_cloudwatch_dashboard" "api_details" {
-  for_each = { for k, v in var.api_gateway_integrations : k => v if v.api_enabled }
+  for_each = var.api_gateway_integrations
 
   dashboard_name = "${local.dashboard_name}-${each.value.api_path}-api-details"
 

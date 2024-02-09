@@ -667,7 +667,6 @@ variable "api_gateway_integrations" {
     methods_allowed  = list(string)
     authorization    = bool
     authorizer       = string
-    api_enabled      = bool
   }))
   description = "Map of API gateway integrations for services"
 }
