@@ -1,60 +1,51 @@
+locals {
+  key_alias_name = {
+    "backup"                  = "alias/backup/${local.vault_name}"
+    "backup_secondary"        = "alias/backup/${local.secondary_vault_name}"
+    "eks"                     = "alias/eks/${local.eks_cluster_name}"
+    "rds"                     = "alias/rds/${local.rds_cluster_name}"
+    "s3"                      = "alias/s3/${local.s3_name_model}"
+    "s3_replica"              = "alias/s3/${local.s3_replica_name}"
+    "s3_webconsole_artifacts" = "alias/s3/${local.s3_name_webconsole_artifacts}"
+    "s3_webconsole"           = "alias/s3/${local.s3_name_webconsole}"
+  }
+}
+
 ########
 # KMS Key 
 ########
-resource "aws_kms_key" "aws_backup_key" {
-  description             = var.kms_keys["backup"].description
-  deletion_window_in_days = var.kms_keys["backup"].deletion_window
+resource "aws_kms_key" "key" {
+  for_each = var.kms_keys
+
+  description             = each.value.description
+  deletion_window_in_days = each.value.deletion_window
 }
 
-resource "aws_kms_alias" "aws_backup_key" {
-  name          = "alias/backup/${local.vault_name}"
-  target_key_id = aws_kms_key.aws_backup_key.key_id
+resource "aws_kms_alias" "key" {
+  for_each = var.kms_keys
+
+  name          = local.key_alias_name[each.key]
+  target_key_id = aws_kms_key.key[each.key].key_id
 }
 
-resource "aws_kms_key" "aws_backup_secondary_key" {
+resource "aws_kms_key" "key_ireland" {
+  for_each = var.kms_keys_ireland
+
   provider                = aws.ireland
-  description             = var.kms_keys["backup_secondary"].description
-  deletion_window_in_days = var.kms_keys["backup_secondary"].deletion_window
+  description             = each.value.description
+  deletion_window_in_days = each.value.deletion_window
 }
 
-resource "aws_kms_alias" "aws_backup_secondary_key" {
+resource "aws_kms_alias" "key_ireland" {
+  for_each = var.kms_keys_ireland
+
   provider      = aws.ireland
-  name          = "alias/backup/${local.secondary_vault_name}"
-  target_key_id = aws_kms_key.aws_backup_secondary_key.key_id
-}
-
-resource "aws_kms_key" "aws_eks_key" {
-  description             = var.kms_keys["eks"].description
-  deletion_window_in_days = var.kms_keys["eks"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_eks_key" {
-  name          = "alias/eks/${local.eks_cluster_name}"
-  target_key_id = aws_kms_key.aws_eks_key.key_id
-}
-
-resource "aws_kms_key" "aws_rds_key" {
-  description             = var.kms_keys["rds"].description
-  deletion_window_in_days = var.kms_keys["rds"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_rds_key" {
-  name          = "alias/rds/${local.rds_cluster_name}"
-  target_key_id = aws_kms_key.aws_rds_key.key_id
-}
-
-resource "aws_kms_key" "aws_s3_key" {
-  description             = var.kms_keys["s3"].description
-  deletion_window_in_days = var.kms_keys["s3"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_s3_key" {
-  name          = "alias/s3/${local.s3_name_model}"
-  target_key_id = aws_kms_key.aws_s3_key.key_id
+  name          = local.key_alias_name[each.key]
+  target_key_id = aws_kms_key.key_ireland[each.key].key_id
 }
 
 resource "aws_kms_key_policy" "aws_s3_key" {
-  key_id = aws_kms_key.aws_s3_key.key_id
+  key_id = aws_kms_key.key["s3"].key_id
   policy = jsonencode({
     Id = "key-default"
     Statement = [
@@ -90,40 +81,8 @@ resource "aws_kms_key_policy" "aws_s3_key" {
   })
 }
 
-resource "aws_kms_key" "aws_s3_replica_key" {
-  provider                = aws.ireland
-  description             = var.kms_keys["s3_replica"].description
-  deletion_window_in_days = var.kms_keys["s3_replica"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_s3_replica_key" {
-  provider      = aws.ireland
-  name          = "alias/s3/${local.s3_replica_name}"
-  target_key_id = aws_kms_key.aws_s3_replica_key.key_id
-}
-
-resource "aws_kms_key" "aws_s3_webconsole_artifacts_key" {
-  description             = var.kms_keys["s3_webconsole_artifacts"].description
-  deletion_window_in_days = var.kms_keys["s3_webconsole_artifacts"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_s3_webconsole_artifacts_key" {
-  name          = "alias/s3/${local.s3_name_webconsole_artifacts}"
-  target_key_id = aws_kms_key.aws_s3_webconsole_artifacts_key.key_id
-}
-
-resource "aws_kms_key" "aws_s3_webconsole_key" {
-  description             = var.kms_keys["s3_webconsole"].description
-  deletion_window_in_days = var.kms_keys["s3_webconsole"].deletion_window
-}
-
-resource "aws_kms_alias" "aws_s3_webconsole_key" {
-  name          = "alias/s3/${local.s3_name_webconsole}"
-  target_key_id = aws_kms_key.aws_s3_webconsole_key.key_id
-}
-
 resource "aws_kms_key_policy" "aws_s3_webconsole_key" {
-  key_id = aws_kms_key.aws_s3_webconsole_key.key_id
+  key_id = aws_kms_key.key["s3_webconsole"].key_id
   policy = jsonencode({
     Id = "key-default"
     Statement = [

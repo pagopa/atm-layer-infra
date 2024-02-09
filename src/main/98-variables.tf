@@ -554,6 +554,14 @@ variable "kms_keys" {
   description = "Map of KMS Keys"
 }
 
+variable "kms_keys_ireland" {
+  type = map(object({
+    description     = string
+    deletion_window = number
+  }))
+  description = "Map of KMS Keys"
+}
+
 variable "vault_name" {
   type        = string
   description = "AWS Backup vault name."

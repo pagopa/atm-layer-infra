@@ -9,13 +9,13 @@ locals {
 ########
 resource "aws_backup_vault" "vault" {
   name        = local.vault_name
-  kms_key_arn = aws_kms_key.aws_backup_key.arn
+  kms_key_arn = aws_kms_key.key["backup"].arn
 }
 
 resource "aws_backup_vault" "secondary_vault" {
   provider    = aws.ireland
   name        = local.secondary_vault_name
-  kms_key_arn = aws_kms_key.aws_backup_secondary_key.arn
+  kms_key_arn = aws_kms_key.key_ireland["backup_secondary"].arn
 }
 
 resource "aws_backup_plan" "plan" {

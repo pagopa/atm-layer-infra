@@ -60,7 +60,7 @@ resource "aws_rds_cluster" "rds" {
   skip_final_snapshot          = true
   apply_immediately            = true
   port                         = var.rds_cluster_port
-  kms_key_id                   = aws_kms_key.aws_rds_key.arn
+  kms_key_id                   = aws_kms_key.key["rds"].arn
   storage_encrypted            = true
   preferred_maintenance_window = var.rds_cluster_preferred_maintanance_windows
 }

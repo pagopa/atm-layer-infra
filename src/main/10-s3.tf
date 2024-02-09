@@ -19,7 +19,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.aws_s3_key.key_id
+      kms_master_key_id = aws_kms_key.key["s3"].key_id
       sse_algorithm     = "aws:kms"
     }
   }
@@ -68,7 +68,7 @@ resource "aws_iam_policy" "s3_eks_pod" {
                 "kms:Decrypt",
                 "kms:GenerateDataKey"
             ],
-            "Resource": "${aws_kms_key.aws_s3_key.arn}"
+            "Resource": "${aws_kms_key.key["s3"].arn}"
         }
     ]
 }
@@ -96,7 +96,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_replica" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.aws_s3_replica_key.key_id
+      kms_master_key_id = aws_kms_key.key_ireland["s3_replica"].key_id
       sse_algorithm     = "aws:kms"
     }
   }
@@ -152,14 +152,14 @@ resource "aws_iam_role_policy" "s3_replication_policy" {
         Action = "kms:Decrypt",
         Effect = "Allow",
         Resource = [
-          "${aws_kms_key.aws_s3_key.arn}"
+          "${aws_kms_key.key["s3"].arn}"
         ]
       },
       {
         Action = ["kms:Encrypt", "kms:GenerateDataKey*", "kms:ReEncrypt*"],
         Effect = "Allow",
         Resource = [
-          "${aws_kms_key.aws_s3_replica_key.arn}"
+          "${aws_kms_key.key_ireland["s3_replica"].arn}"
         ]
       }
     ]
@@ -180,7 +180,7 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
       bucket        = aws_s3_bucket.s3_replica.arn
       storage_class = "STANDARD"
       encryption_configuration {
-        replica_kms_key_id = aws_kms_alias.aws_s3_replica_key.arn
+        replica_kms_key_id = aws_kms_alias.key_ireland["s3_replica"].arn
       }
     }
 
@@ -310,7 +310,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_webconsole_art
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.aws_s3_webconsole_artifacts_key.key_id
+      kms_master_key_id = aws_kms_key.key["s3_webconsole_artifacts"].key_id
       sse_algorithm     = "aws:kms"
     }
   }
@@ -337,7 +337,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_webconsole" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.aws_s3_webconsole_key.key_id
+      kms_master_key_id = aws_kms_key.key["s3_webconsole"].key_id
       sse_algorithm     = "aws:kms"
     }
   }

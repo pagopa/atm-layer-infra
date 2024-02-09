@@ -114,10 +114,6 @@ kms_keys = {
     description     = "PAGOPA - KMS Backup key 1",
     deletion_window = 10
   },
-  backup_secondary = {
-    description     = "PAGOPA - KMS Backup key 2",
-    deletion_window = 10
-  },
   eks = {
     description     = "PAGOPA - KMS EKS key",
     deletion_window = 10
@@ -130,16 +126,23 @@ kms_keys = {
     description     = "PAGOPA - KMS S3 key",
     deletion_window = 10
   },
-  s3_replica = {
-    description     = "PAGOPA - KMS S3 Replica key",
-    deletion_window = 10
-  },
   s3_webconsole_artifacts = {
     description     = "PAGOPA - KMS S3 WebConsole artifacts key",
     deletion_window = 10
   },
   s3_webconsole = {
     description     = "PAGOPA - KMS S3 WebConsole key",
+    deletion_window = 10
+  }
+}
+
+kms_keys_ireland = {
+  backup_secondary = {
+    description     = "PAGOPA - KMS Backup key 2",
+    deletion_window = 10
+  },
+  s3_replica = {
+    description     = "PAGOPA - KMS S3 Replica key",
     deletion_window = 10
   }
 }
