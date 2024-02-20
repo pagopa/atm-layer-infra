@@ -86,7 +86,7 @@ helm_fluent_bit_enabled_elasticsearch           = false
 
 helm_metrics_server_chart_version = "3.10.0"
 
-helm_jaeger_chart_version = "0.74.1"
+helm_jaeger_chart_version          = "0.74.1"
 helm_jaeger_allinone_limits_memory = "2Gi"
 
 helm_csi_secrets_chart_version          = "1.3.4"
@@ -195,8 +195,8 @@ services = {
   }
 }
 
-api_gateway_name        = "api-rest"
-api_gateway_key_enabled = true
+api_gateway_name         = "api-rest"
+api_gateway_key_enabled  = true
 api_gateway_xray_enabled = true
 api_gateway_authorizers = {
   task = {

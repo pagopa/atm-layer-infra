@@ -418,9 +418,9 @@ resource "aws_api_gateway_deployment" "deployment" {
 # API Gateway - Stage
 #########
 resource "aws_api_gateway_stage" "stage" {
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  stage_name    = var.environment
-  deployment_id = aws_api_gateway_deployment.deployment.id
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  stage_name           = var.environment
+  deployment_id        = aws_api_gateway_deployment.deployment.id
   xray_tracing_enabled = var.api_gateway_xray_enabled
 }
 

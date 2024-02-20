@@ -1,5 +1,5 @@
 locals {
-  dashboard_name = "${local.namespace}-dashboard"
+  dashboard_name          = "${local.namespace}-dashboard"
   lambda_s3_function_name = "${local.namespace}-${var.lambda_s3_function_name}"
 }
 
@@ -271,7 +271,7 @@ resource "aws_lambda_function" "s3_log_export" {
   environment {
     variables = {
       DESTINATION_BUCKET = aws_s3_bucket.s3_backup_logs.id,
-      LOG_GROUP = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"     
+      LOG_GROUP          = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
     }
   }
 }

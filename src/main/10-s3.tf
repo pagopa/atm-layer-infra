@@ -494,10 +494,10 @@ resource "aws_s3_bucket_policy" "s3_backup_logs_policy" {
         Resource = "${aws_s3_bucket.s3_backup_logs.arn}"
         Condition = {
           StringEquals = {
-            "aws:SourceAccount" = [ "${local.account_id}" ]
+            "aws:SourceAccount" = ["${local.account_id}"]
           },
           ArnLike = {
-            "aws:SourceArn" = [ "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*" ]
+            "aws:SourceArn" = ["arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*"]
           }
         }
       },
@@ -510,11 +510,11 @@ resource "aws_s3_bucket_policy" "s3_backup_logs_policy" {
         Resource = "${aws_s3_bucket.s3_backup_logs.arn}/*"
         Condition = {
           StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
-            "aws:SourceAccount" = [ "${local.account_id}" ]
+            "s3:x-amz-acl"      = "bucket-owner-full-control"
+            "aws:SourceAccount" = ["${local.account_id}"]
           },
           ArnLike = {
-            "aws:SourceArn" = [ "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*" ]
+            "aws:SourceArn" = ["arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*"]
           }
         }
       }

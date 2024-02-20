@@ -143,7 +143,7 @@ resource "aws_kms_key_policy" "aws_s3_backup_logs_key" {
           Service = "logs.${var.aws_region}.amazonaws.com"
         }
         Resource = "*"
-        Sid = "Allow CWL Service Principal usage"
+        Sid      = "Allow CWL Service Principal usage"
       }
     ]
     Version = "2012-10-17"
