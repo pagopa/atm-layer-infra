@@ -8,6 +8,7 @@ locals {
     "s3_replica"              = "alias/s3/${local.s3_replica_name}"
     "s3_webconsole_artifacts" = "alias/s3/${local.s3_name_webconsole_artifacts}"
     "s3_webconsole"           = "alias/s3/${local.s3_name_webconsole}"
+    "s3_backup_logs"          = "alias/s3/${local.s3_name_backup_logs}"
   }
 }
 
@@ -118,3 +119,33 @@ resource "aws_kms_key_policy" "aws_s3_webconsole_key" {
   })
 }
 
+resource "aws_kms_key_policy" "aws_s3_backup_logs_key" {
+  key_id = aws_kms_key.key["s3_backup_logs"].key_id
+  policy = jsonencode({
+    Id = "key-default"
+    Statement = [
+      {
+        Action = "kms:*"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${local.account_id}:root"
+        }
+        Resource = "*"
+        Sid      = "Enable IAM User Permissions"
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.${var.aws_region}.amazonaws.com"
+        }
+        Resource = "*"
+        Sid = "Allow CWL Service Principal usage"
+      }
+    ]
+    Version = "2012-10-17"
+  })
+}

@@ -87,6 +87,7 @@ helm_fluent_bit_enabled_elasticsearch           = false
 helm_metrics_server_chart_version = "3.10.0"
 
 helm_jaeger_chart_version = "0.74.1"
+helm_jaeger_allinone_limits_memory = "2Gi"
 
 helm_csi_secrets_chart_version          = "1.3.4"
 helm_csi_secrets_sync_secret            = true
@@ -132,6 +133,10 @@ kms_keys = {
   },
   s3_webconsole = {
     description     = "PAGOPA - KMS S3 WebConsole key",
+    deletion_window = 10
+  },
+  s3_backup_logs = {
+    description     = "PAGOPA - KMS S3 Backup logs key",
     deletion_window = 10
   }
 }
@@ -192,6 +197,7 @@ services = {
 
 api_gateway_name        = "api-rest"
 api_gateway_key_enabled = true
+api_gateway_xray_enabled = false
 api_gateway_authorizers = {
   task = {
     name = "jwt"

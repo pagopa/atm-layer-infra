@@ -19,6 +19,11 @@ resource "helm_release" "jeager" {
   }
 
   set {
+    name  = "allInOne.resources.limits.memory"
+    value = var.helm_jaeger_allinone_limits_memory
+  }
+
+  set {
     name  = "storage.type"
     value = var.helm_jaeger_storage_type
   }

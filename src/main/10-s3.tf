@@ -2,6 +2,7 @@ locals {
   s3_name_model                = "${local.namespace}-s3-model"
   s3_name_webconsole           = "${local.namespace}-s3-web-console"
   s3_name_webconsole_artifacts = "${local.namespace}-s3-web-console-artifacts"
+  s3_name_backup_logs          = "${local.namespace}-s3-backup-logs"
   s3_replica_name              = "${local.namespace}-s3-model-replica"
 }
 
@@ -433,3 +434,91 @@ resource "aws_s3_bucket_policy" "s3_webconsole_policy" {
     ]
   })
 }
+
+########
+# S3 Bucket - backup logs
+########
+resource "aws_s3_bucket" "s3_backup_logs" {
+  bucket = local.s3_name_backup_logs
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_backup_logs" {
+  bucket = aws_s3_bucket.s3_backup_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.key["s3_backup_logs"].arn
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_backup_logs" {
+  bucket = aws_s3_bucket.s3_backup_logs.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "s3_backup_logs" {
+  bucket = aws_s3_bucket.s3_backup_logs.id
+
+  rule {
+    id     = "expire-objects"
+    status = "Enabled"
+
+    expiration {
+      days = 365 * 5
+    }
+
+    filter {
+      prefix = "" # Apply for all objects
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "s3_backup_logs_policy" {
+  bucket = aws_s3_bucket.s3_backup_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.${var.aws_region}.amazonaws.com"
+        }
+        Action   = "s3:GetBucketAcl"
+        Resource = "${aws_s3_bucket.s3_backup_logs.arn}"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = [ "${local.account_id}" ]
+          },
+          ArnLike = {
+            "aws:SourceArn" = [ "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*" ]
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.${var.aws_region}.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.s3_backup_logs.arn}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+            "aws:SourceAccount" = [ "${local.account_id}" ]
+          },
+          ArnLike = {
+            "aws:SourceArn" = [ "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*" ]
+          }
+        }
+      }
+    ]
+  })
+}
+

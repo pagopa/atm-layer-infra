@@ -375,6 +375,11 @@ variable "helm_jaeger_allinone_enabled" {
   description = "Helm chart replicas for metrics server."
 }
 
+variable "helm_jaeger_allinone_limits_memory" {
+  type        = string
+  description = "Helm chart recourse limit for memory."
+}
+
 variable "helm_jaeger_provisionDataStore_cassandra" {
   type        = string
   default     = "false"
@@ -604,6 +609,12 @@ variable "lambda_function_name" {
   description = "Lambda function name."
 }
 
+variable "lambda_s3_function_name" {
+  type        = string
+  default     = "s3-log-export"
+  description = "Lambda s3 function name."
+}
+
 variable "lambda_function_name_create_schema" {
   type        = string
   default     = "rds-create-schema"
@@ -624,6 +635,12 @@ variable "cloudwatch_rule_turn_off" {
 variable "cloudwatch_rule_turn_on" {
   type        = string
   description = "Cloudwatch turn on cron."
+}
+
+variable "cloudwatch_rule_log_export" {
+  type        = string
+  default     = "cron(0 3 * * ? *)"
+  description = "Cloudwatch start log export cron."
 }
 
 variable "night_shutdown" {
@@ -658,6 +675,11 @@ variable "api_gateway_name" {
 variable "api_gateway_key_enabled" {
   type        = bool
   description = "If Api Gateway is enabled or not."
+}
+
+variable "api_gateway_xray_enabled" {
+  type        = bool
+  description = "If X-Ray in Api Gateway is enabled or not."
 }
 
 variable "api_gateway_authorizers" {
