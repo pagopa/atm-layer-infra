@@ -609,3 +609,27 @@ resource "aws_secretsmanager_secret_policy" "mil_secret_manager_policy" {
     }]
   })
 }
+
+########
+# Secret Manager - idPay (add manually the secrets value after pod deployment)
+########
+resource "aws_secretsmanager_secret" "idpay_secret_manager" {
+  name        = "${local.namespace}/idpay/credentials"
+  description = "idPay API Key"
+}
+
+resource "aws_secretsmanager_secret_policy" "idpay_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.idpay_secret_manager.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        AWS = "${aws_iam_role.eks_cluster.arn}"
+      },
+      Action   = "secretsmanager:GetSecretValue",
+      Resource = "*"
+    }]
+  })
+}

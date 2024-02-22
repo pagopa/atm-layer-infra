@@ -422,6 +422,11 @@ resource "aws_api_gateway_stage" "stage" {
   stage_name           = var.environment
   deployment_id        = aws_api_gateway_deployment.deployment.id
   xray_tracing_enabled = var.api_gateway_xray_enabled
+
+  access_log_settings {
+    destination_arn = "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
+    format          = "[$context.requestId] HTTP Method: $context.httpMethod - Resource Path: $context.resourcePath - Status: $context.status"
+  }
 }
 
 resource "aws_api_gateway_method_settings" "settings" {
