@@ -36,14 +36,27 @@ vpc_endpoints = {
   }
 }
 
+# Night autoscaling cronjob
+night_shutdown = true
+
+# DB CronJob
+cloudwatch_rule_turn_off = "cron(30 18 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
+cloudwatch_rule_turn_on  = "cron(15 7 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:15 Rome
+
 eks_cluster_name            = "eks"
 eks_cluster_scaling_min     = 3
 eks_cluster_scaling_max     = 3
 eks_cluster_scaling_desired = 3
 eks_node_group_name         = "eks-node-group"
 eks_node_group_type         = ["t3.large"]
-eks_scale_down_cron         = "0 20 * * *"
-eks_scale_up_cron           = "0 6 * * 1-5"
+
+# EKS Cronjob
+eks_scale_down_cron = "30 19 * * *"  # TURN OFF Ogni giorno alle 19:30 Rome
+eks_scale_up_cron   = "20 8 * * 1-5" # TURN ON Ogni giorno alle 08:20 Rome
+
+# POD Cronjob
+helm_kube_downscaler_cronjob = "Mon-Fri 08:45-19:25 Europe/Rome"
+
 eks_addons = {
   coredns = {
     name = "coredns"
@@ -159,10 +172,6 @@ backup_plan_rule_name      = "backup-plan-rule"
 backup_plan_schedule       = "cron(0 12 * * ? *)"
 backup_plan_lifecycle_days = 2
 backup_selection_name      = "backup-selection"
-
-cloudwatch_rule_turn_off = "cron(0 20 * * ? *)"      # TURN OFF Ogni giorno alle 21:00 Rome
-cloudwatch_rule_turn_on  = "cron(0 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 07:00 Rome
-night_shutdown           = true
 
 # Add service here to create ECR and IAM Role for service account
 services = {

@@ -410,6 +410,11 @@ variable "helm_jaeger_query_enabled" {
   description = "Helm chart replicas for metrics server."
 }
 
+variable "helm_kube_downscaler_cronjob" {
+  type        = string
+  description = "Helm chart kube-downscaler cronjob."
+}
+
 variable "helm_csi_secrets_name" {
   type        = string
   default     = "csi-secrets-store"

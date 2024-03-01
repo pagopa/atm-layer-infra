@@ -165,6 +165,6 @@ resource "helm_release" "kube_downscaler" {
 
   set {
     name  = "deployment.environment.DEFAULT_UPTIME"
-    value = "Mon-Fri 11:44-18:55 Europe/Rome"
+    value = var.helm_kube_downscaler_cronjob
   }
 }
