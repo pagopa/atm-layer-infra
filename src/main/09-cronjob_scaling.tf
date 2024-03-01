@@ -160,11 +160,11 @@ resource "helm_release" "kube_downscaler" {
   namespace  = var.k8s_kube_system_namespace
   repository = "https://charts.deliveryhero.io/"
   chart      = "kube-downscaler"
-  version    = "0.7.4"
+  version    = "0.5.1"
   depends_on = [aws_eks_cluster.eks_cluster]
 
   set {
-    name  = "defaultUptime"
-    value = "Mon-Fri 11:27-18:55 Europe/Rome"
+    name  = "deployment.environment.DEFAULT_UPTIME"
+    value = "Mon-Fri 11:44-18:55 Europe/Rome"
   }
 }
