@@ -126,24 +126,45 @@ resource "aws_lambda_permission" "allow_on_cloudwatch" {
 ########
 # Autoscaling scheduled for EKS Node Group
 ########
-# resource "aws_autoscaling_schedule" "scale_down" {
-#   count = var.night_shutdown == true ? 1 : 0
+resource "aws_autoscaling_schedule" "scale_down" {
+  count = var.night_shutdown == true ? 1 : 0
 
-#   scheduled_action_name  = "${local.namespace}-scale-down-nightly"
-#   min_size               = 0
-#   max_size               = 0
-#   desired_capacity       = 0
-#   recurrence             = var.eks_scale_down_cron
-#   autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
-# }
+  scheduled_action_name  = "${local.namespace}-scale-down-nightly"
+  min_size               = 0
+  max_size               = 0
+  desired_capacity       = 0
+  recurrence             = var.eks_scale_down_cron
+  time_zone              = "Europe/Rome"
+  autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
+}
 
-# resource "aws_autoscaling_schedule" "scale_up" {
-#   count = var.night_shutdown == true ? 1 : 0
+resource "aws_autoscaling_schedule" "scale_up" {
+  count = var.night_shutdown == true ? 1 : 0
 
-#   scheduled_action_name  = "${local.namespace}-scale-up-worktime"
-#   min_size               = var.eks_cluster_scaling_min
-#   max_size               = var.eks_cluster_scaling_max
-#   desired_capacity       = var.eks_cluster_scaling_desired
-#   recurrence             = var.eks_scale_up_cron
-#   autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
-# }
+  scheduled_action_name  = "${local.namespace}-scale-up-worktime"
+  min_size               = var.eks_cluster_scaling_min
+  max_size               = var.eks_cluster_scaling_max
+  desired_capacity       = var.eks_cluster_scaling_desired
+  recurrence             = var.eks_scale_up_cron
+  time_zone              = "Europe/Rome"
+  autoscaling_group_name = aws_eks_node_group.eks_node_group.resources[0].autoscaling_groups[0].name
+}
+
+########
+# Helm chart - downscaler
+########
+resource "helm_release" "kube_downscaler" {
+  count = var.night_shutdown == true ? 1 : 0
+
+  name       = "kube-downscaler"
+  namespace  = var.k8s_kube_system_namespace
+  repository = "https://charts.deliveryhero.io/"
+  chart      = "kube-downscaler"
+  version    = "0.7.4"
+  depends_on = [aws_eks_cluster.eks_cluster]
+
+  set {
+    name  = "defaultUptime"
+    value = "Mon-Fri 11:27-18:55 Europe/Rome"
+  }
+}
