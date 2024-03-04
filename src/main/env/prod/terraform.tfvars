@@ -51,11 +51,11 @@ eks_node_group_name         = "eks-node-group"
 eks_node_group_type         = ["t3.large"]
 
 # EKS Cronjob
-eks_scale_down_cron = "35 12 * * *"   # TURN OFF Ogni giorno alle 19:30 Rome
-eks_scale_up_cron   = "55 12 * * 1-5" # TURN ON Ogni giorno alle 08:20 Rome
+eks_scale_down_cron = "30 19 * * *"   # TURN OFF Ogni giorno alle 19:30 Rome
+eks_scale_up_cron   = "20 08 * * 1-5" # TURN ON Ogni giorno alle 08:20 Rome
 
 # POD Cronjob
-helm_kube_downscaler_cronjob = "Mon-Fri 13:10-18:00 Europe/Rome"
+helm_kube_downscaler_cronjob = "Mon-Fri 08:35-19:15 Europe/Rome"
 
 eks_addons = {
   coredns = {
