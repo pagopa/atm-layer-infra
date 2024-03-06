@@ -206,7 +206,7 @@ services = {
 
 api_gateway_name         = "api-rest"
 api_gateway_key_enabled  = true
-api_gateway_xray_enabled = true
+api_gateway_xray_enabled = false
 api_gateway_authorizers = {
   task = {
     name = "jwt"
