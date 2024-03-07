@@ -2,6 +2,8 @@ locals {
   s3_name_model                = "${local.namespace}-s3-model"
   s3_name_webconsole           = "${local.namespace}-s3-web-console"
   s3_name_webconsole_artifacts = "${local.namespace}-s3-web-console-artifacts"
+  s3_name_emulator             = "${local.namespace}-s3-emulator"
+  s3_name_emulator_artifacts   = "${local.namespace}-s3-emulator-artifacts"
   s3_name_backup_logs          = "${local.namespace}-s3-backup-logs"
   s3_replica_name              = "${local.namespace}-s3-model-replica"
 }
@@ -428,6 +430,144 @@ resource "aws_s3_bucket_policy" "s3_webconsole_policy" {
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_webconsole_distribution.id}"
+          }
+        }
+      }
+    ]
+  })
+}
+
+########
+# S3 Bucket - emulator artifacts
+########
+resource "aws_s3_bucket" "s3_emulator_artifacts" {
+  bucket = local.s3_name_emulator_artifacts
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_emulator_artifacts" {
+  bucket = aws_s3_bucket.s3_emulator_artifacts.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.key["s3_emulator_artifacts"].key_id
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_emulator_artifacts" {
+  bucket = aws_s3_bucket.s3_emulator_artifacts.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+########
+# S3 Bucket - emulator
+########
+resource "aws_s3_bucket" "s3_emulator" {
+  bucket = local.s3_name_emulator
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_emulator" {
+  bucket = aws_s3_bucket.s3_emulator.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.key["s3_emulator"].key_id
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_emulator" {
+  bucket = aws_s3_bucket.s3_emulator.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+########
+# Cloudfront - CDN for S3 bucket web console
+########
+resource "aws_cloudfront_distribution" "s3_emulator_distribution" {
+  origin {
+    domain_name              = aws_s3_bucket.s3_emulator.bucket_regional_domain_name
+    origin_id                = local.s3_name_emulator
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3_emulator.id
+  }
+
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "CDN for ATM Emulator"
+  http_version    = "http2"
+
+  default_cache_behavior {
+    cache_policy_id  = var.cdn_cache_policy_enabled_id
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_name_emulator
+
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+      locations        = []
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+  custom_error_response {
+    error_caching_min_ttl = 0
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/emulator/index.html"
+  }
+
+  custom_error_response {
+    error_caching_min_ttl = 0
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/emulator/index.html"
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "s3_emulator" {
+  name                              = "S3EmulatorOAC"
+  description                       = "S3EmulatorOAC"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "s3_emulator_policy" {
+  bucket = aws_s3_bucket.s3_emulator.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.s3_emulator.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_emulator_distribution.id}"
           }
         }
       }

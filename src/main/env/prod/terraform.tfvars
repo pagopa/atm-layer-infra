@@ -148,6 +148,14 @@ kms_keys = {
     description     = "PAGOPA - KMS S3 WebConsole key",
     deletion_window = 10
   },
+  s3_emulator_artifacts = {
+    description     = "PAGOPA - KMS S3 Emulator artifacts key",
+    deletion_window = 10
+  },
+  s3_emulator = {
+    description     = "PAGOPA - KMS S3 Emulator key",
+    deletion_window = 10
+  },
   s3_backup_logs = {
     description     = "PAGOPA - KMS S3 Backup logs key",
     deletion_window = 10
