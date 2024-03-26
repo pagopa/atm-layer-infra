@@ -424,9 +424,17 @@ resource "aws_api_gateway_stage" "stage" {
   xray_tracing_enabled = var.api_gateway_xray_enabled
 
   access_log_settings {
-    destination_arn = "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
+    # destination_arn = "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
+    destination_arn = aws_cloudwatch_log_group.api.arn
     format          = "[$context.requestId] HTTP Method: $context.httpMethod - Resource Path: $context.resourcePath - Status: $context.status"
   }
+}
+
+resource "aws_cloudwatch_log_group" "api" {
+  name              = "/aws/apigateway/custom/${aws_api_gateway_rest_api.api.id}/${var.environment}"
+  retention_in_days = 60
+
+  tags_all = var.tags
 }
 
 resource "aws_api_gateway_method_settings" "settings" {
@@ -528,7 +536,8 @@ resource "aws_cognito_user_pool_client" "client_backoffice" {
   callback_urls = [
     "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com",
     "https://${local.namespace}-backoffice.auth.${var.aws_region}.amazoncognito.com/oauth2/idpresponse",
-    "https://${aws_cloudfront_distribution.s3_webconsole_distribution.domain_name}/webconsole/login/callback"
+    "https://${aws_cloudfront_distribution.s3_webconsole_distribution.domain_name}/webconsole/login/callback",
+    "https://${aws_cloudfront_distribution.s3_emulator_distribution.domain_name}/emulator/login/callback"
   ]
 
   refresh_token_validity = 30

@@ -267,11 +267,12 @@ resource "aws_lambda_function" "s3_log_export" {
   handler       = "lambda_function.lambda_handler"
   runtime       = var.lambda_function_runtime
   filename      = "lambdas/${var.environment}/s3_log_export/lambda_function_payload.zip"
+  timeout       = 120
 
   environment {
     variables = {
       DESTINATION_BUCKET = aws_s3_bucket.s3_backup_logs.id,
-      LOG_GROUP          = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
+      LOG_GROUP          = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment},/aws/eks/fluentbit-cloudwatch/workload/${var.k8s_namespace},/aws/eks/fluentbit-cloudwatch/workload/kube-system,/aws/eks/fluentbit-cloudwatch/workload/default"
     }
   }
 }

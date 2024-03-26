@@ -209,6 +209,9 @@ services = {
   },
   atm_layer_console_service = {
     name = "console-service"
+  },
+  atm_layer_transaction_service = {
+    name = "transaction-service"
   }
 }
 
@@ -245,7 +248,15 @@ api_gateway_integrations = {
   atm_layer_model = {
     api_path         = "model",
     api_uri          = "api/v1/model/{proxy}/",
-    api_key_required = false,
+    api_key_required = true,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+    authorization    = false,
+    authorizer       = ""
+  },
+  atm_layer_transaction_service = {
+    api_path         = "transaction-service",
+    api_uri          = "api/v1/transaction-service/{proxy}/",
+    api_key_required = true,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
     authorization    = false,
     authorizer       = ""
@@ -255,7 +266,7 @@ api_gateway_integrations = {
     api_uri          = "api/v1/console-service/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = true,
+    authorization    = false,
     authorizer       = "backoffice"
   }
 }
