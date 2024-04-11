@@ -5,6 +5,7 @@ locals {
     "eks"                     = "alias/eks/${local.eks_cluster_name}"
     "rds"                     = "alias/rds/${local.rds_cluster_name}"
     "s3"                      = "alias/s3/${local.s3_name_model}"
+    "s3_task_logs"            = "alias/s3/${local.s3_name_task_trace_logs}"
     "s3_replica"              = "alias/s3/${local.s3_replica_name}"
     "s3_webconsole_artifacts" = "alias/s3/${local.s3_name_webconsole_artifacts}"
     "s3_webconsole"           = "alias/s3/${local.s3_name_webconsole}"

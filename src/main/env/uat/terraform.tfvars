@@ -40,8 +40,8 @@ vpc_endpoints = {
 night_shutdown = true
 
 # DB CronJob
-cloudwatch_rule_turn_off = "cron(30 18 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
-cloudwatch_rule_turn_on  = "cron(15 7 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:15 Rome
+cloudwatch_rule_turn_off = "cron(30 17 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
+cloudwatch_rule_turn_on  = "cron(15 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:15 Rome
 
 eks_cluster_name            = "eks"
 eks_cluster_scaling_min     = 3
@@ -138,6 +138,10 @@ kms_keys = {
   },
   s3 = {
     description     = "PAGOPA - KMS S3 key",
+    deletion_window = 10
+  },
+  s3_task_logs = {
+    description     = "PAGOPA - KMS S3 Task logs key",
     deletion_window = 10
   },
   s3_webconsole_artifacts = {
@@ -244,6 +248,14 @@ api_gateway_integrations = {
     methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
     authorization    = true,
     authorizer       = "task"
+  },
+  atm_layer_wf_process = {
+    api_path         = "processes",
+    api_uri          = "api/v1/processes/{proxy}/",
+    api_key_required = true,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
+    authorization    = false,
+    authorizer       = ""
   },
   atm_layer_model = {
     api_path         = "model",

@@ -1,5 +1,6 @@
 locals {
   s3_name_model                = "${local.namespace}-s3-model"
+  s3_name_task_trace_logs      = "${local.namespace}-s3-wf-task-trace-logs"
   s3_name_webconsole           = "${local.namespace}-s3-web-console"
   s3_name_webconsole_artifacts = "${local.namespace}-s3-web-console-artifacts"
   s3_name_emulator             = "${local.namespace}-s3-emulator"
@@ -36,7 +37,7 @@ resource "aws_s3_bucket_versioning" "s3" {
 }
 
 #######
-# IAM Policy - Manage s3 from eks pods
+# IAM Policy - Allow MODEL to wrtie on s3 from eks pods
 ########
 resource "aws_iam_policy" "s3_eks_pod" {
   name        = "s3-model-eks-pods-policy"
@@ -81,6 +82,81 @@ EOF
 resource "aws_iam_role_policy_attachment" "eks_pod_1" {
   policy_arn = aws_iam_policy.s3_eks_pod.arn
   role       = aws_iam_role.eks_serviceaccount["atm_layer_model"].name
+}
+
+########
+# S3 Bucket - Task trace logs
+########
+resource "aws_s3_bucket" "s3_tasks" {
+  bucket = local.s3_name_task_trace_logs
+
+  tags_all = var.tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tasks" {
+  bucket = aws_s3_bucket.s3_tasks.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.key["s3_task_logs"].key_id
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "s3_tasks" {
+  bucket = aws_s3_bucket.s3_tasks.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+#######
+# IAM Policy - Allow TASK to wrtie on s3 from eks pods
+########
+resource "aws_iam_policy" "s3_task_eks_pod" {
+  name        = "s3-task-eks-pods-policy"
+  description = "IAM policy to manage s3 from pods"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+              "${aws_s3_bucket.s3_tasks.arn}"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+              "${aws_s3_bucket.s3_tasks.arn}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:GenerateDataKey"
+            ],
+            "Resource": "${aws_kms_key.key["s3_task_logs"].arn}"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "eks_pod_2" {
+  policy_arn = aws_iam_policy.s3_task_eks_pod.arn
+  role       = aws_iam_role.eks_serviceaccount["atm_layer_wf_task"].name
 }
 
 ########
