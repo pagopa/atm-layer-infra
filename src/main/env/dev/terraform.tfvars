@@ -249,14 +249,6 @@ api_gateway_integrations = {
     authorization    = true,
     authorizer       = "task"
   },
-  atm_layer_wf_process = {
-    api_path         = "processes",
-    api_uri          = "api/v1/processes/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
-    authorization    = false,
-    authorizer       = ""
-  },
   atm_layer_model = {
     api_path         = "model",
     api_uri          = "api/v1/model/{proxy}/",
