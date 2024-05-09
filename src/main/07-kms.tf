@@ -4,6 +4,7 @@ locals {
     "backup_secondary"        = "alias/backup/${local.secondary_vault_name}"
     "eks"                     = "alias/eks/${local.eks_cluster_name}"
     "rds"                     = "alias/rds/${local.rds_cluster_name}"
+    "redis"                   = "alias/redis/${local.rds_cluster_name}"
     "s3"                      = "alias/s3/${local.s3_name_model}"
     "s3_task_logs"            = "alias/s3/${local.s3_name_task_trace_logs}"
     "s3_replica"              = "alias/s3/${local.s3_replica_name}"

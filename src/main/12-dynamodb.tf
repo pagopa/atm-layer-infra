@@ -1,5 +1,5 @@
 locals {
-  table_name_trace_logs = "${local.namespace}-wf-task-trace-logs"
+  table_name_trace_logs         = "${local.namespace}-wf-task-trace-logs"
   table_name_instance_variables = "${local.namespace}-wf-process-instance-variables"
 }
 

@@ -136,6 +136,10 @@ kms_keys = {
     description     = "PAGOPA - KMS RDS key",
     deletion_window = 10
   },
+  redis = {
+    description     = "PAGOPA - KMS ElastiCache key",
+    deletion_window = 10
+  },
   s3 = {
     description     = "PAGOPA - KMS S3 key",
     deletion_window = 10

@@ -33,7 +33,7 @@ resource "aws_security_group_rule" "redis_rule_egress_1" {
 }
 
 ########
-# Redis Cluster
+# Redis Replication Group
 ########
 resource "aws_elasticache_replication_group" "redis" {
   replication_group_id       = local.redis_cluster_name
@@ -48,8 +48,10 @@ resource "aws_elasticache_replication_group" "redis" {
   maintenance_window         = var.redis_cluster_maintenance_window
   multi_az_enabled           = true
   automatic_failover_enabled = true
+  at_rest_encryption_enabled = true
   subnet_group_name          = aws_elasticache_subnet_group.redis.id
   security_group_ids         = [aws_security_group.redis.id]
+  kms_key_id                 = aws_kms_key.key["redis"].arn
 }
 
 ########
@@ -64,9 +66,9 @@ resource "aws_secretsmanager_secret" "redis_secret_manager" {
 resource "aws_secretsmanager_secret_version" "redis_credentials_version" {
   secret_id = aws_secretsmanager_secret.redis_secret_manager.id
   secret_string = jsonencode({
-    host        = "${aws_elasticache_replication_group.redis.primary_endpoint_address}",
-    host-reader = "${aws_elasticache_replication_group.redis.reader_endpoint_address}",
-    port        = "${var.redis_cluster_port}",
+    host       = "${aws_elasticache_replication_group.redis.primary_endpoint_address}",
+    hostReader = "${aws_elasticache_replication_group.redis.reader_endpoint_address}",
+    port       = "${var.redis_cluster_port}",
   })
 }
 

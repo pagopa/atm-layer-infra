@@ -92,7 +92,7 @@ resource "aws_secretsmanager_secret_version" "rds_credentials_version" {
     host                = "${aws_rds_cluster.rds.endpoint}",
     port                = "${aws_rds_cluster.rds.port}",
     dbClusterIdentifier = "${aws_rds_cluster.rds.id}",
-    host-reader         = "${aws_rds_cluster.rds.reader_endpoint}",
+    hostReader          = "${aws_rds_cluster.rds.reader_endpoint}",
     dbName              = "${aws_rds_cluster.rds.database_name}",
   })
 }

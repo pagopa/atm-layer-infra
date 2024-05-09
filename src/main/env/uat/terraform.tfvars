@@ -84,7 +84,7 @@ rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
 redis_cluster_engine_version       = "7.0"
-redis_cluster_node_type            = "cache.t4g.micro"
+redis_cluster_node_type            = "cache.t4g.medium"
 redis_cluster_node_number          = 1
 redis_cluster_node_replica_number  = 2
 redis_cluster_parameter_group_name = "default.redis7"
@@ -134,6 +134,10 @@ kms_keys = {
   },
   rds = {
     description     = "PAGOPA - KMS RDS key",
+    deletion_window = 10
+  },
+  redis = {
+    description     = "PAGOPA - KMS ElastiCache key",
     deletion_window = 10
   },
   s3 = {
