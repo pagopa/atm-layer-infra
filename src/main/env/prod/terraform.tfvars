@@ -37,7 +37,7 @@ vpc_endpoints = {
 }
 
 # Night autoscaling cronjob
-night_shutdown = true
+night_shutdown = false
 
 # DB CronJob
 cloudwatch_rule_turn_off = "cron(30 17 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
@@ -66,10 +66,7 @@ eks_addons = {
   },
   vpc-cni = {
     name = "vpc-cni"
-  },
-  # aws-ebs-csi-driver = {
-  #   name = "aws-ebs-csi-driver"
-  # }
+  }
 }
 
 rds_cluster_name                    = "rds"
@@ -78,13 +75,14 @@ rds_cluster_db_name                 = "pagopadb"
 rds_cluster_port                    = 5432
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
-rds_cluster_preferred_backup_window = "07:00-09:00"
-rds_instance_type                   = "db.t4g.medium"
+rds_cluster_preferred_backup_window = "01:00-02:00"
+rds_instance_type                   = "db.t4g.large" # db.r6g.large
+rds_instance_replicas               = 3
 rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
 redis_cluster_engine_version       = "7.0"
-redis_cluster_node_type            = "cache.t4g.micro"
+redis_cluster_node_type            = "cache.t4g.medium"
 redis_cluster_node_number          = 1
 redis_cluster_node_replica_number  = 2
 redis_cluster_parameter_group_name = "default.redis7"
@@ -185,15 +183,12 @@ vault_name                 = "vault"
 secondary_vault_name       = "secondary-vault"
 backup_plan_name           = "backup-plan"
 backup_plan_rule_name      = "backup-plan-rule"
-backup_plan_schedule       = "cron(0 12 * * ? *)"
+backup_plan_schedule       = "cron(0 23 * * ? *)"
 backup_plan_lifecycle_days = 2
 backup_selection_name      = "backup-selection"
 
 # Add service here to create ECR and IAM Role for service account
 services = {
-  quarkus_hello_world = {
-    name = "helloworld"
-  },
   atm_layer_wf_engine = {
     name = "wf-engine"
   },
@@ -237,14 +232,6 @@ api_gateway_authorizers = {
 
 # Add service here to create API Gateway integrations and Cloudwatch dashboard
 api_gateway_integrations = {
-  quarkus_hello_world = {
-    api_path         = "microservice5",
-    api_uri          = "microservice5/{proxy}/",
-    api_key_required = false,
-    methods_allowed  = ["GET"]
-    authorization    = true,
-    authorizer       = "backoffice"
-  },
   atm_layer_wf_task = {
     api_path         = "tasks",
     api_uri          = "api/v1/tasks/{proxy}/",
@@ -252,14 +239,6 @@ api_gateway_integrations = {
     methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
     authorization    = true,
     authorizer       = "task"
-  },
-  atm_layer_model = {
-    api_path         = "model",
-    api_uri          = "api/v1/model/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
   },
   atm_layer_transaction_service = {
     api_path         = "transaction-service",

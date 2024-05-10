@@ -180,6 +180,11 @@ variable "rds_instance_type" {
   description = "RDS Instance type"
 }
 
+variable "rds_instance_replicas" {
+  type        = number
+  description = "RDS Instance repliche number"
+}
+
 variable "rds_db_schemas" {
   type        = string
   default     = ""

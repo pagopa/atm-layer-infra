@@ -66,13 +66,16 @@ resource "aws_rds_cluster" "rds" {
 }
 
 resource "aws_rds_cluster_instance" "rds_instances" {
-  count                = 3
-  identifier           = "aurora-cluster-instance-${count.index}"
-  cluster_identifier   = aws_rds_cluster.rds.id
-  instance_class       = var.rds_instance_type
-  engine               = aws_rds_cluster.rds.engine
-  engine_version       = aws_rds_cluster.rds.engine_version
-  db_subnet_group_name = aws_db_subnet_group.rds.id
+  count                                 = var.rds_instance_replicas
+  identifier                            = "aurora-cluster-instance-${count.index}"
+  cluster_identifier                    = aws_rds_cluster.rds.id
+  instance_class                        = var.rds_instance_type
+  engine                                = aws_rds_cluster.rds.engine
+  engine_version                        = aws_rds_cluster.rds.engine_version
+  db_subnet_group_name                  = aws_db_subnet_group.rds.id
+  performance_insights_enabled          = true
+  performance_insights_retention_period = 7
+  apply_immediately                     = true
 }
 
 ########

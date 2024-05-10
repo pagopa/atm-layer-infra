@@ -40,8 +40,8 @@ vpc_endpoints = {
 night_shutdown = true
 
 # DB CronJob
-cloudwatch_rule_turn_off = "cron(30 17 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
-cloudwatch_rule_turn_on  = "cron(15 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:15 Rome
+cloudwatch_rule_turn_off = "cron(30 18 * * ? *)"      # TURN OFF Ogni giorno alle 20:30 Rome
+cloudwatch_rule_turn_on  = "cron(30 5 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 07:30 Rome
 
 eks_cluster_name            = "eks"
 eks_cluster_scaling_min     = 3
@@ -51,11 +51,11 @@ eks_node_group_name         = "eks-node-group"
 eks_node_group_type         = ["t3.large"]
 
 # EKS Cronjob
-eks_scale_down_cron = "30 19 * * *"   # TURN OFF Ogni giorno alle 19:30 Rome
-eks_scale_up_cron   = "20 08 * * 1-5" # TURN ON Ogni giorno alle 08:20 Rome
+eks_scale_down_cron = "30 20 * * *"   # TURN OFF Ogni giorno alle 20:30 Rome
+eks_scale_up_cron   = "35 07 * * 1-5" # TURN ON Ogni giorno alle 07:35 Rome
 
 # POD Cronjob
-helm_kube_downscaler_cronjob = "Mon-Fri 08:35-19:15 Europe/Rome"
+helm_kube_downscaler_cronjob = "Mon-Fri 07:50-20:15 Europe/Rome"
 
 eks_addons = {
   coredns = {
@@ -66,10 +66,7 @@ eks_addons = {
   },
   vpc-cni = {
     name = "vpc-cni"
-  },
-  # aws-ebs-csi-driver = {
-  #   name = "aws-ebs-csi-driver"
-  # }
+  }
 }
 
 rds_cluster_name                    = "rds"
@@ -79,7 +76,8 @@ rds_cluster_port                    = 5432
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
-rds_instance_type                   = "db.t4g.medium"
+rds_instance_type                   = "db.t4g.large"
+rds_instance_replicas               = 2
 rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
@@ -191,9 +189,6 @@ backup_selection_name      = "backup-selection"
 
 # Add service here to create ECR and IAM Role for service account
 services = {
-  quarkus_hello_world = {
-    name = "helloworld"
-  },
   atm_layer_wf_engine = {
     name = "wf-engine"
   },
@@ -237,14 +232,6 @@ api_gateway_authorizers = {
 
 # Add service here to create API Gateway integrations and Cloudwatch dashboard
 api_gateway_integrations = {
-  quarkus_hello_world = {
-    api_path         = "microservice5",
-    api_uri          = "microservice5/{proxy}/",
-    api_key_required = false,
-    methods_allowed  = ["GET"]
-    authorization    = true,
-    authorizer       = "backoffice"
-  },
   atm_layer_wf_task = {
     api_path         = "tasks",
     api_uri          = "api/v1/tasks/{proxy}/",
@@ -252,14 +239,6 @@ api_gateway_integrations = {
     methods_allowed  = ["GET", "PUT", "POST", "DELETE"]
     authorization    = true,
     authorizer       = "task"
-  },
-  atm_layer_model = {
-    api_path         = "model",
-    api_uri          = "api/v1/model/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
   },
   atm_layer_transaction_service = {
     api_path         = "transaction-service",

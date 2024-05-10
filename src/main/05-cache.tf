@@ -52,6 +52,7 @@ resource "aws_elasticache_replication_group" "redis" {
   subnet_group_name          = aws_elasticache_subnet_group.redis.id
   security_group_ids         = [aws_security_group.redis.id]
   kms_key_id                 = aws_kms_key.key["redis"].arn
+  apply_immediately          = true
 }
 
 ########

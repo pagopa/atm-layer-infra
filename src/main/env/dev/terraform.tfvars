@@ -66,10 +66,7 @@ eks_addons = {
   },
   vpc-cni = {
     name = "vpc-cni"
-  },
-  # aws-ebs-csi-driver = {
-  #   name = "aws-ebs-csi-driver"
-  # }
+  }
 }
 
 rds_cluster_name                    = "rds"
@@ -80,6 +77,7 @@ rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
 rds_instance_type                   = "db.t4g.medium"
+rds_instance_replicas               = 2
 rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
