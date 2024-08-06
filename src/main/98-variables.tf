@@ -7,7 +7,13 @@ variable "aws_region" {
 variable "aws_secondary_region" {
   type        = string
   default     = "eu-west-1"
-  description = "AWS region to create resources. Default Ireland"
+  description = "AWS region to create resources: Ireland"
+}
+
+variable "aws_nvirginia_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "AWS region to create resources: N. Virginia"
 }
 
 variable "app_name" {
@@ -24,6 +30,11 @@ variable "environment" {
 variable "env_short" {
   type        = string
   description = "Environment short."
+}
+
+variable "vpc_account_default" {
+  type        = string
+  description = "VPC ID alreadyexisting in account."
 }
 
 variable "vpc_cidr" {
@@ -54,6 +65,12 @@ variable "vpc_endpoints" {
     priv_dns = bool
   }))
   description = "Map of VPC Endpoints"
+}
+
+variable "sns_aws_ip_range_topic" {
+  type        = string
+  default     = "arn:aws:sns:us-east-1:806199016981:AmazonIpSpaceChanged"
+  description = "SNS topic to be notified when a public amazon service IP changes."
 }
 
 variable "eks_cluster_name" {
@@ -415,6 +432,41 @@ variable "helm_jaeger_query_enabled" {
   description = "Helm chart replicas for metrics server."
 }
 
+variable "tracing_pod_enabled" {
+  type        = bool
+  description = "Boolean to choose if enabling tracing as a pod"
+}
+
+variable "tracing_cluster_enabled" {
+  type        = bool
+  description = "Boolean to choose if enabling tracing as a ECS cluster"
+}
+
+variable "tracing_cluster_instance_type" {
+  type        = string
+  description = "ECS instance type"
+}
+
+variable "tracing_cluster_ami" {
+  type        = string
+  description = "ECS AMI"
+}
+
+variable "tracing_opensearch_instance_type" {
+  type        = string
+  description = "Opensearch instance type"
+}
+
+variable "tracing_opensearch_engine" {
+  type        = string
+  description = "Opensearch engine"
+}
+
+variable "tracing_opensearch_instance_count" {
+  type        = number
+  description = "Opensearch instance count"
+}
+
 variable "helm_kube_downscaler_cronjob" {
   type        = string
   description = "Helm chart kube-downscaler cronjob."
@@ -535,9 +587,14 @@ variable "k8s_namespace" {
   description = "Kubernetes Namespace."
 }
 
-variable "k8s_config_map_aws_auth_sso" {
+variable "k8s_config_map_aws_auth_admin_sso" {
   type        = string
   description = "SSO AWS Admin."
+}
+
+variable "k8s_config_map_aws_auth_readonly_sso" {
+  type        = string
+  description = "SSO AWS ReadOnly."
 }
 
 variable "k8s_config_map_aws_auth_terraform_user" {
@@ -746,6 +803,32 @@ variable "cognito_google_idp_client_secret" {
   sensitive   = true
   description = "Google Idp client secret"
 }
+
+variable "s3_allow_ssl_only_policy" {
+  default = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSSLRequestsOnly",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "{bucket_arn}/*",
+        "{bucket_arn}"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
+
 
 variable "tags" {
   type = map(any)

@@ -59,6 +59,31 @@ resource "aws_s3_bucket_versioning" "terraform_states" {
   }
 }
 
+resource "aws_s3_bucket_policy" "terraform_states" {
+  bucket = aws_s3_bucket.terraform_states.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowSSLRequestsOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "${aws_s3_bucket.terraform_states.arn}/*",
+          "${aws_s3_bucket.terraform_states.arn}",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # create a DynamoDB table for locking the state file
 resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
   name           = "terraform-lock"

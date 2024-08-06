@@ -93,6 +93,11 @@ resource "aws_s3_bucket" "s3_tasks" {
   tags_all = var.tags
 }
 
+resource "aws_s3_bucket_policy" "s3_tasks" {
+  bucket = aws_s3_bucket.s3_tasks.id
+  policy = replace(replace(var.s3_allow_ssl_only_policy, "{bucket_arn}", aws_s3_bucket.s3_tasks.arn), "{bucket_arn}", aws_s3_bucket.s3_tasks.arn)
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tasks" {
   bucket = aws_s3_bucket.s3_tasks.id
 
@@ -167,6 +172,12 @@ resource "aws_s3_bucket" "s3_replica" {
   bucket   = "${local.s3_name_model}-replica"
 
   tags_all = var.tags
+}
+
+resource "aws_s3_bucket_policy" "s3_replica" {
+  provider = aws.ireland
+  bucket   = aws_s3_bucket.s3_replica.id
+  policy   = replace(replace(var.s3_allow_ssl_only_policy, "{bucket_arn}", aws_s3_bucket.s3_replica.arn), "{bucket_arn}", aws_s3_bucket.s3_replica.arn)
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_replica" {
@@ -320,7 +331,7 @@ resource "aws_cloudfront_origin_access_control" "s3" {
   signing_protocol                  = "sigv4"
 }
 
-resource "aws_s3_bucket_policy" "example" {
+resource "aws_s3_bucket_policy" "s3" {
   bucket = aws_s3_bucket.s3.id
 
   policy = jsonencode({
@@ -337,6 +348,21 @@ resource "aws_s3_bucket_policy" "example" {
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"
+          }
+        }
+      },
+      {
+        Sid       = "AllowSSLRequestsOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "${aws_s3_bucket.s3.arn}/*",
+          "${aws_s3_bucket.s3.arn}",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
           }
         }
       }
@@ -382,6 +408,11 @@ resource "aws_s3_bucket" "s3_webconsole_artifacts" {
   bucket = local.s3_name_webconsole_artifacts
 
   tags_all = var.tags
+}
+
+resource "aws_s3_bucket_policy" "s3_webconsole_artifacts" {
+  bucket = aws_s3_bucket.s3_webconsole_artifacts.id
+  policy = replace(replace(var.s3_allow_ssl_only_policy, "{bucket_arn}", aws_s3_bucket.s3_webconsole_artifacts.arn), "{bucket_arn}", aws_s3_bucket.s3_webconsole_artifacts.arn)
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_webconsole_artifacts" {
@@ -508,6 +539,21 @@ resource "aws_s3_bucket_policy" "s3_webconsole_policy" {
             "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_webconsole_distribution.id}"
           }
         }
+      },
+      {
+        Sid       = "AllowSSLRequestsOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "${aws_s3_bucket.s3_webconsole.arn}/*",
+          "${aws_s3_bucket.s3_webconsole.arn}",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
       }
     ]
   })
@@ -520,6 +566,11 @@ resource "aws_s3_bucket" "s3_emulator_artifacts" {
   bucket = local.s3_name_emulator_artifacts
 
   tags_all = var.tags
+}
+
+resource "aws_s3_bucket_policy" "s3_emulator_artifacts" {
+  bucket = aws_s3_bucket.s3_emulator_artifacts.id
+  policy = replace(replace(var.s3_allow_ssl_only_policy, "{bucket_arn}", aws_s3_bucket.s3_emulator_artifacts.arn), "{bucket_arn}", aws_s3_bucket.s3_emulator_artifacts.arn)
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "s3_emulator_artifacts" {
@@ -646,6 +697,21 @@ resource "aws_s3_bucket_policy" "s3_emulator_policy" {
             "AWS:SourceArn" = "arn:aws:cloudfront::${local.account_id}:distribution/${aws_cloudfront_distribution.s3_emulator_distribution.id}"
           }
         }
+      },
+      {
+        Sid       = "AllowSSLRequestsOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "${aws_s3_bucket.s3_emulator.arn}/*",
+          "${aws_s3_bucket.s3_emulator.arn}",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
       }
     ]
   })
@@ -731,6 +797,21 @@ resource "aws_s3_bucket_policy" "s3_backup_logs_policy" {
           },
           ArnLike = {
             "aws:SourceArn" = ["arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:*"]
+          }
+        }
+      },
+      {
+        Sid       = "AllowSSLRequestsOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "${aws_s3_bucket.s3_backup_logs.arn}/*",
+          "${aws_s3_bucket.s3_backup_logs.arn}",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
           }
         }
       }

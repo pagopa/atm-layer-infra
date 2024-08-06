@@ -43,17 +43,16 @@ resource "random_password" "password" {
 }
 
 resource "aws_rds_cluster" "rds" {
-  cluster_identifier = local.rds_cluster_name
-  engine             = var.rds_cluster_engine
-  engine_version     = var.rds_cluster_engine_version
-  availability_zones = var.azs
-  database_name      = var.rds_cluster_db_name
-  master_username    = var.rds_cluster_master_username
-  master_password    = random_password.password.result
-  # manage_master_user_password  = true
-  # master_user_secret_kms_key_id = aws_kms_key.aws_rds_key.arn
+  cluster_identifier           = local.rds_cluster_name
+  engine                       = var.rds_cluster_engine
+  engine_version               = var.rds_cluster_engine_version
+  availability_zones           = var.azs
+  database_name                = var.rds_cluster_db_name
+  master_username              = var.rds_cluster_master_username
+  master_password              = random_password.password.result
   backup_retention_period      = var.rds_cluster_backup_retention_period
   preferred_backup_window      = var.rds_cluster_preferred_backup_window
+  copy_tags_to_snapshot        = true
   db_subnet_group_name         = aws_db_subnet_group.rds.id
   vpc_security_group_ids       = [aws_security_group.rds.id]
   network_type                 = "IPV4"
@@ -63,10 +62,12 @@ resource "aws_rds_cluster" "rds" {
   kms_key_id                   = aws_kms_key.key["rds"].arn
   storage_encrypted            = true
   preferred_maintenance_window = var.rds_cluster_preferred_maintanance_windows
+  deletion_protection          = true
 }
 
 resource "aws_rds_cluster_instance" "rds_instances" {
-  count                                 = var.rds_instance_replicas
+  count = var.rds_instance_replicas
+
   identifier                            = "aurora-cluster-instance-${count.index}"
   cluster_identifier                    = aws_rds_cluster.rds.id
   instance_class                        = var.rds_instance_type
@@ -76,6 +77,40 @@ resource "aws_rds_cluster_instance" "rds_instances" {
   performance_insights_enabled          = true
   performance_insights_retention_period = 7
   apply_immediately                     = true
+
+  # Enhanced monitoring
+  monitoring_interval = 60
+  monitoring_role_arn = aws_iam_role.rds_enhanced_monitoring.arn
+
+}
+
+########
+# Create an IAM role to allow enhanced monitoring
+########
+
+resource "aws_iam_role" "rds_enhanced_monitoring" {
+  name_prefix        = "rds-enhanced-monitoring-"
+  assume_role_policy = data.aws_iam_policy_document.rds_enhanced_monitoring.json
+}
+
+resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
+  role       = aws_iam_role.rds_enhanced_monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+data "aws_iam_policy_document" "rds_enhanced_monitoring" {
+  statement {
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["monitoring.rds.amazonaws.com"]
+    }
+  }
 }
 
 ########

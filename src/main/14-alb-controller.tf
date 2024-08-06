@@ -46,11 +46,11 @@ resource "aws_lb" "nlb_int" {
   enable_deletion_protection = false
 }
 
-# # Following resource needs Internal ALB
+# Following resource needs Internal ALB
 
-# #########
-# # NLB Target Group
-# #########
+#########
+# NLB Target Group
+#########
 resource "aws_lb_target_group" "nlb_int_target_group" {
   name        = "${local.namespace}-nlb-int-tg"
   port        = var.alb_http_port
@@ -64,9 +64,9 @@ resource "aws_lb_target_group" "nlb_int_target_group" {
     port                = "traffic-port"
     healthy_threshold   = 5
     unhealthy_threshold = 2
-    timeout             = 6
-    interval            = 30
-    matcher             = "200-399"
+    timeout             = 5
+    interval            = 15
+    matcher             = "404"
   }
 }
 
@@ -89,9 +89,9 @@ resource "aws_lb_target_group_attachment" "nlb_int_target_group_attachment" {
   depends_on = [aws_lb_listener.nlb_int_target_group_listener]
 }
 
-# ########
-# # Security group for NLB - create it with EKS for security group ingress rule
-# ########
+########
+# Security group for NLB - create it with EKS for security group ingress rule
+########
 resource "aws_security_group" "nlb_int" {
   name   = "${local.namespace}-nlb-int-sg"
   vpc_id = aws_vpc.main.id
@@ -103,9 +103,9 @@ resource "aws_security_group" "nlb_int" {
 
 resource "aws_security_group_rule" "nlb_int_rule_ingress_1" {
   type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.nlb_int.id
 }

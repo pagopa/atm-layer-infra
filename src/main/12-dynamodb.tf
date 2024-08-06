@@ -1,6 +1,6 @@
 locals {
-  table_name_trace_logs         = "${local.namespace}-wf-task-trace-logs"
-  table_name_instance_variables = "${local.namespace}-wf-process-instance-variables"
+  table_name_trace_logs         = "pagopa-atm-layer-wf-task-trace-logs"
+  table_name_instance_variables = "pagopa-atm-layer-wf-process-instance-variables"
 }
 
 #######
@@ -13,7 +13,7 @@ resource "aws_dynamodb_table" "trace_log" {
 
   attribute {
     name = "id"
-    type = "N"
+    type = "S"
   }
 }
 

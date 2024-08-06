@@ -10,6 +10,7 @@ tags = {
   CostCenter  = ""
 }
 
+vpc_account_default      = "vpc-01f3ad997439abd4e"
 vpc_cidr                 = "10.110.8.0/22"
 vpc_private_subnets_cidr = ["10.110.8.0/24", "10.110.9.0/24", "10.110.10.0/24"]
 vpc_public_subnets_cidr  = ["10.110.11.0/26", "10.110.11.64/26", "10.110.11.128/26"]
@@ -31,17 +32,32 @@ vpc_endpoints = {
   },
   s3 = {
     name     = "s3"
-    type     = "Interface"
+    type     = "Gateway"
     priv_dns = false
+  },
+  lambda = {
+    name     = "lambda"
+    type     = "Interface"
+    priv_dns = true
+  },
+  dynamodb = {
+    name     = "dynamodb"
+    type     = "Gateway"
+    priv_dns = false
+  },
+  sns = {
+    name     = "sns"
+    type     = "Interface"
+    priv_dns = true
   }
 }
 
 # Night autoscaling cronjob
-night_shutdown = false
+night_shutdown = true
 
 # DB CronJob
 cloudwatch_rule_turn_off = "cron(30 17 * * ? *)"      # TURN OFF Ogni giorno alle 19:30 Rome
-cloudwatch_rule_turn_on  = "cron(15 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:15 Rome
+cloudwatch_rule_turn_on  = "cron(30 6 ? * MON-FRI *)" # TURN ON Ogni giorno, Lun-Ven, alle 08:30 Rome
 
 eks_cluster_name            = "eks"
 eks_cluster_scaling_min     = 3
@@ -52,10 +68,10 @@ eks_node_group_type         = ["t3.large"]
 
 # EKS Cronjob
 eks_scale_down_cron = "30 19 * * *"   # TURN OFF Ogni giorno alle 19:30 Rome
-eks_scale_up_cron   = "20 08 * * 1-5" # TURN ON Ogni giorno alle 08:20 Rome
+eks_scale_up_cron   = "35 08 * * 1-5" # TURN ON Ogni giorno alle 08:35 Rome
 
 # POD Cronjob
-helm_kube_downscaler_cronjob = "Mon-Fri 08:35-19:15 Europe/Rome"
+helm_kube_downscaler_cronjob = "Mon-Fri 08:50-19:15 Europe/Rome"
 
 eks_addons = {
   coredns = {
@@ -70,14 +86,14 @@ eks_addons = {
 }
 
 rds_cluster_name                    = "rds"
-rds_cluster_engine_version          = "15.3"
+rds_cluster_engine_version          = "15.4"
 rds_cluster_db_name                 = "pagopadb"
 rds_cluster_port                    = 5432
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
-rds_cluster_preferred_backup_window = "01:00-02:00"
-rds_instance_type                   = "db.t4g.large" # db.r6g.large
-rds_instance_replicas               = 3
+rds_cluster_preferred_backup_window = "07:00-09:00"
+rds_instance_type                   = "db.t4g.medium" # da mettere db.r6g.2xlarge
+rds_instance_replicas               = 2               # da mettere 3
 rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
@@ -100,6 +116,15 @@ helm_metrics_server_chart_version = "3.10.0"
 helm_jaeger_chart_version          = "0.74.1"
 helm_jaeger_allinone_limits_memory = "2Gi"
 
+tracing_pod_enabled           = true
+tracing_cluster_enabled       = false
+tracing_cluster_instance_type = "t3.medium"
+tracing_cluster_ami           = "ami-074dca56a76155183"
+
+tracing_opensearch_instance_type  = "t3.medium.search"
+tracing_opensearch_engine         = "Elasticsearch_7.10"
+tracing_opensearch_instance_count = 2
+
 helm_csi_secrets_chart_version          = "1.3.4"
 helm_csi_secrets_sync_secret            = true
 helm_csi_secrets_rotation_poll_interval = "10s"
@@ -115,7 +140,8 @@ k8s_alb_name_int = "pagopa-prod-atm-layer-alb-int"
 k8s_alb_name_ext = "pagopa-prod-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
-k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_42c75f496d1f85dd"
+k8s_config_map_aws_auth_admin_sso      = "AWSReservedSSO_AWSAdministratorAccess_42c75f496d1f85dd"
+k8s_config_map_aws_auth_readonly_sso   = "AWSReservedSSO_AWSReadOnlyAccess_ca5cdac28971e9f5"
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
@@ -215,6 +241,9 @@ services = {
   },
   atm_layer_transaction_service = {
     name = "transaction-service"
+  },
+  atm_layer_user_service = {
+    name = "user-service"
   }
 }
 

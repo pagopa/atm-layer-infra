@@ -10,6 +10,7 @@ tags = {
   CostCenter  = ""
 }
 
+vpc_account_default      = "vpc-0961efb7cf755d680"
 vpc_cidr                 = "10.110.0.0/22"
 vpc_private_subnets_cidr = ["10.110.0.0/24", "10.110.1.0/24", "10.110.2.0/24"]
 vpc_public_subnets_cidr  = ["10.110.3.0/26", "10.110.3.64/26", "10.110.3.128/26"]
@@ -31,8 +32,28 @@ vpc_endpoints = {
   },
   s3 = {
     name     = "s3"
-    type     = "Interface"
+    type     = "Gateway"
     priv_dns = false
+  },
+  lambda = {
+    name     = "lambda"
+    type     = "Interface"
+    priv_dns = true
+  },
+  dynamodb = {
+    name     = "dynamodb"
+    type     = "Gateway"
+    priv_dns = false
+  },
+  sns = {
+    name     = "sns"
+    type     = "Interface"
+    priv_dns = true
+  },
+  rds = {
+    name     = "rds"
+    type     = "Interface"
+    priv_dns = true
   }
 }
 
@@ -70,14 +91,14 @@ eks_addons = {
 }
 
 rds_cluster_name                    = "rds"
-rds_cluster_engine_version          = "15.3"
+rds_cluster_engine_version          = "15.4"
 rds_cluster_db_name                 = "pagopadb"
 rds_cluster_port                    = 5431
 rds_cluster_master_username         = "pagopaadmin"
 rds_cluster_backup_retention_period = 1
 rds_cluster_preferred_backup_window = "07:00-09:00"
 rds_instance_type                   = "db.t4g.medium"
-rds_instance_replicas               = 2
+rds_instance_replicas               = 1
 rds_db_schemas                      = "atm_layer_engine,atm_layer_model_schema"
 
 redis_cluster_name                 = "redis"
@@ -100,6 +121,15 @@ helm_metrics_server_chart_version = "3.10.0"
 helm_jaeger_chart_version          = "0.74.1"
 helm_jaeger_allinone_limits_memory = "2Gi"
 
+tracing_pod_enabled           = true
+tracing_cluster_enabled       = false
+tracing_cluster_instance_type = "t3.medium"
+tracing_cluster_ami           = "ami-074dca56a76155183"
+
+tracing_opensearch_instance_type  = "t3.medium.search"
+tracing_opensearch_engine         = "Elasticsearch_7.10"
+tracing_opensearch_instance_count = 2
+
 helm_csi_secrets_chart_version          = "1.3.4"
 helm_csi_secrets_sync_secret            = true
 helm_csi_secrets_rotation_poll_interval = "10s"
@@ -115,7 +145,8 @@ k8s_alb_name_int = "pagopa-dev-atm-layer-alb-int"
 k8s_alb_name_ext = "pagopa-dev-atm-layer-alb-ext"
 k8s_namespace    = "pagopa"
 
-k8s_config_map_aws_auth_sso            = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
+k8s_config_map_aws_auth_admin_sso      = "AWSReservedSSO_AWSAdministratorAccess_37cb6a51d1076702"
+k8s_config_map_aws_auth_readonly_sso   = "AWSReservedSSO_AWSReadOnlyAccess_666d69aae7d7dfe1"
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
@@ -218,6 +249,9 @@ services = {
   },
   atm_layer_transaction_service = {
     name = "transaction-service"
+  },
+  atm_layer_user_service = {
+    name = "user-service"
   }
 }
 
@@ -267,12 +301,20 @@ api_gateway_integrations = {
     authorization    = false,
     authorizer       = ""
   },
-  atm_layer_console_service = {
+  atm_layer_console_service = { # da mettere JWT
     api_path         = "console-service",
     api_uri          = "api/v1/console-service/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
     authorization    = false,
     authorizer       = "backoffice"
-  }
+  },
+  atm_layer_user_service = { # da togliere
+    api_path         = "user-service",
+    api_uri          = "api/v1/user-service/{proxy}/",
+    api_key_required = false,
+    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+    authorization    = false,
+    authorizer       = ""
+  },
 }

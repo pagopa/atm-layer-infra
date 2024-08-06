@@ -17,9 +17,9 @@ resource "aws_security_group" "eks_cluster" {
 
 resource "aws_security_group_rule" "eks_rule_ingress_1" {
   type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.eks_cluster.id
 }
@@ -104,7 +104,7 @@ resource "kubernetes_config_map" "aws_auth" {
   - system:nodes
   rolearn: ${aws_iam_role.eks_nodes.arn}
   username: system:node:{{EC2PrivateDNSName}}
-- rolearn: arn:aws:iam::${local.account_id}:role/${var.k8s_config_map_aws_auth_sso}
+- rolearn: arn:aws:iam::${local.account_id}:role/${var.k8s_config_map_aws_auth_admin_sso}
   username: admin
   groups:
     - system:masters
@@ -112,6 +112,10 @@ resource "kubernetes_config_map" "aws_auth" {
   username: admin
   groups:
     - system:masters
+- rolearn: arn:aws:iam::${local.account_id}:role/${var.k8s_config_map_aws_auth_readonly_sso}
+  username: readonly
+  groups:
+    - readonly
 YAML
     mapUsers = <<EOT
 - groups:
@@ -121,8 +125,60 @@ EOT
   }
 
   depends_on = [
-    aws_eks_cluster.eks_cluster
+    aws_eks_cluster.eks_cluster,
+    kubernetes_cluster_role_binding.readonly_binding
   ]
+}
+
+#######
+# K8s configmap role binding - ReadOnly 
+########
+resource "kubernetes_cluster_role_binding" "readonly_binding" {
+  metadata {
+    name = "readonly-binding"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "view"
+  }
+
+  subject {
+    kind      = "User"
+    name      = "readonly"
+    api_group = "rbac.authorization.k8s.io"
+  }
+}
+
+resource "kubernetes_cluster_role" "readonly_nodes" {
+  metadata {
+    name = "readonly-nodes"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["nodes"]
+    verbs      = ["get", "list", "watch"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "readonly_nodes_binding" {
+  metadata {
+    name = "readonly-nodes-binding"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.readonly_nodes.metadata[0].name
+  }
+
+  subject {
+    kind      = "User"
+    name      = "readonly"
+    api_group = "rbac.authorization.k8s.io"
+  }
 }
 
 ########

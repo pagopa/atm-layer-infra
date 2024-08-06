@@ -492,6 +492,49 @@ resource "aws_cognito_resource_server" "resource" {
   user_pool_id = aws_cognito_user_pool.userpool.id
 }
 
+#######
+# IAM Policy - Allow USER SERVICE to create/read/update/delete App client on M2M Userpool
+########
+resource "aws_iam_policy" "cognito_mil_auth_eks_pod" {
+  name        = "cognito-mil-auth-eks-pods-policy"
+  description = "IAM policy allowing USER SERVICE to create/read/update/delete App client on M2M Userpool"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cognito-idp:CreateUserPoolClient",
+                "cognito-idp:DescribeUserPoolClient",
+                "cognito-idp:UpdateUserPoolClient",
+                "cognito-idp:DeleteUserPoolClient",
+                "apigateway:GET",
+                "apigateway:POST",
+                "apigateway:DELETE",
+                "apigateway:PATCH",
+                "apigateway:PUT"
+            ],
+            "Resource": [
+              "${aws_cognito_user_pool.userpool.arn}",
+              "arn:aws:apigateway:${var.aws_region}::/apikeys",
+              "arn:aws:apigateway:${var.aws_region}::/apikeys/*",
+              "arn:aws:apigateway:${var.aws_region}::/usageplans",
+              "arn:aws:apigateway:${var.aws_region}::/usageplans/*",
+              "arn:aws:apigateway:${var.aws_region}::/usageplans/*/keys"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "eks_pod_5" {
+  policy_arn = aws_iam_policy.cognito_mil_auth_eks_pod.arn
+  role       = aws_iam_role.eks_serviceaccount["atm_layer_user_service"].name
+}
+
 #########
 # Cognito - User pool - Backoffice
 #########

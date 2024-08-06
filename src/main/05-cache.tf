@@ -46,6 +46,8 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name       = var.redis_cluster_parameter_group_name
   port                       = var.redis_cluster_port
   maintenance_window         = var.redis_cluster_maintenance_window
+  snapshot_window            = var.rds_cluster_preferred_backup_window
+  snapshot_retention_limit   = var.rds_cluster_backup_retention_period
   multi_az_enabled           = true
   automatic_failover_enabled = true
   at_rest_encryption_enabled = true

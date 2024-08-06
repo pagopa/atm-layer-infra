@@ -1,6 +1,7 @@
 locals {
-  dashboard_name          = "${local.namespace}-dashboard"
-  lambda_s3_function_name = "${local.namespace}-${var.lambda_s3_function_name}"
+  dashboard_name               = "${local.namespace}-dashboard"
+  lambda_s3_function_name      = "${local.namespace}-${var.lambda_s3_function_name}"
+  lambda_latency_function_name = "latency-logging"
 }
 
 ########
@@ -251,6 +252,15 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         ],
         Effect   = "Allow",
         Resource = "*"
+      },
+      {
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ],
+        Resource = "*",
+        Effect   = "Allow",
       }
     ]
   })
@@ -268,6 +278,11 @@ resource "aws_lambda_function" "s3_log_export" {
   runtime       = var.lambda_function_runtime
   filename      = "lambdas/${var.environment}/s3_log_export/lambda_function_payload.zip"
   timeout       = 120
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
+    security_group_ids = [aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id]
+  }
 
   environment {
     variables = {
@@ -294,4 +309,48 @@ resource "aws_lambda_permission" "allow_s3_log_export" {
   function_name = aws_lambda_function.s3_log_export.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.s3_log_export.arn
+}
+
+########
+# Monitoring - Internal/External call - Lambda
+########
+resource "aws_lambda_function" "latency_logging" {
+  function_name = local.lambda_latency_function_name
+  role          = aws_iam_role.lambda_s3_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_function_runtime
+  filename      = "lambdas/${var.environment}/latency_logging/lambda_function_payload.zip"
+  timeout       = 120
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
+    security_group_ids = [aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id]
+  }
+}
+
+resource "aws_iam_policy" "lambda_task_eks_pod" {
+  name        = "lambda-task-eks-pods-policy"
+  description = "IAM policy allowing Task to invoke lambda latency_logging"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:invokeFunction"
+            ],
+            "Resource": [
+              "${aws_lambda_function.latency_logging.arn}"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "eks_pod_6" {
+  policy_arn = aws_iam_policy.lambda_task_eks_pod.arn
+  role       = aws_iam_role.eks_serviceaccount["atm_layer_wf_task"].name
 }

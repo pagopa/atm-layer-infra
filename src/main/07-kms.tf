@@ -24,6 +24,7 @@ resource "aws_kms_key" "key" {
 
   description             = each.value.description
   deletion_window_in_days = each.value.deletion_window
+  enable_key_rotation     = true
 }
 
 resource "aws_kms_alias" "key" {
