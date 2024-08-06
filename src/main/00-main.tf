@@ -20,7 +20,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
 
   default_tags {
     tags = var.tags
@@ -28,8 +28,17 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "ireland"
-  region = var.aws_secondary_region
+  alias   = "ireland"
+  region  = var.aws_secondary_region
+
+  default_tags {
+    tags = var.tags
+  }
+}
+
+provider "aws" {
+  alias   = "nvirginia"
+  region  = var.aws_nvirginia_region
 
   default_tags {
     tags = var.tags
@@ -66,4 +75,26 @@ data "aws_eks_cluster_auth" "kubernetes" {
 data "aws_eks_cluster" "kubernetes" {
   name       = "${local.namespace}-${var.eks_cluster_name}"
   depends_on = [aws_eks_cluster.eks_cluster]
+}
+
+resource "aws_s3_account_public_access_block" "s3_account_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_ebs_encryption_by_default" "ebs_account_encryption" {
+  enabled = true
+}
+
+resource "aws_iam_account_password_policy" "iam_account_policy" {
+  minimum_password_length        = 8
+  require_lowercase_characters   = true
+  require_numbers                = true
+  require_uppercase_characters   = true
+  require_symbols                = true
+  allow_users_to_change_password = true
+  max_password_age               = 90
+  password_reuse_prevention      = 4
 }
