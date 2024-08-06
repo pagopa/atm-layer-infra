@@ -86,9 +86,9 @@ resource "aws_s3_bucket_policy" "terraform_states" {
 
 # create a DynamoDB table for locking the state file
 resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
-  name           = "terraform-lock"
-  hash_key       = "LockID"
-  billing_mode   = "PAY_PER_REQUEST"
+  name         = "terraform-lock"
+  hash_key     = "LockID"
+  billing_mode = "PAY_PER_REQUEST"
 
   attribute {
     name = "LockID"
