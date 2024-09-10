@@ -54,8 +54,47 @@ vpc_endpoints = {
     name     = "rds"
     type     = "Interface"
     priv_dns = true
-  }
+  },
+  # ec2 = {
+  #   name     = "ec2"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # },
+  # sts = {
+  #   name     = "sts"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # },
+  # elasticloadbalancing = {
+  #   name     = "elasticloadbalancing"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # },
+  # eks = {
+  #   name     = "eks"
+  #   type     = "Interface"
+  #   priv_dns = true
+  # }
 }
+
+prefix_list_entries = [
+  {
+    cidr        = "172.211.209.126/32"
+    description = "MIL DEV"
+  },
+  {
+    cidr        = "172.211.156.166/32"
+    description = "MIL UAT"
+  },
+  {
+    cidr        = "20.71.68.43/32"
+    description = "IDPay DEV"
+  },
+  {
+    cidr        = "20.31.11.237/32"
+    description = "IDPay UAT"
+  }
+]
 
 # Night autoscaling cronjob
 night_shutdown = true
@@ -318,3 +357,7 @@ api_gateway_integrations = {
     authorizer       = ""
   },
 }
+
+cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/console-service\\/task\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 429 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
+
+wafv2_enabled = false

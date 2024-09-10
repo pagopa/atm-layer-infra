@@ -11,6 +11,46 @@ resource "helm_release" "csi_secrets_store" {
   depends_on = [aws_eks_cluster.eks_cluster]
 
   set {
+    name  = "linux.image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/k8s/csi-secrets-store/driver"
+  }
+
+  set {
+    name  = "linux.image.tag"
+    value = "v1.3.4"
+  }
+
+  set {
+    name  = "linux.registrarImage.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/k8s/sig-storage/csi-node-driver-registrar"
+  }
+
+  set {
+    name  = "linux.registrarImage.tag"
+    value = "v2.8.0"
+  }
+
+  set {
+    name  = "linux.crds.image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/k8s/csi-secrets-store/driver-crds"
+  }
+
+  set {
+    name  = "linux.crds.image.tag"
+    value = "v1.3.4"
+  }
+
+  set {
+    name  = "linux.livenessProbeImage.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/k8s/sig-storage/livenessprobe"
+  }
+
+  set {
+    name  = "linux.livenessProbeImage.tag"
+    value = "v2.10.0"
+  }
+
+  set {
     name  = "syncSecret.enabled"
     value = var.helm_csi_secrets_sync_secret
   }
@@ -37,25 +77,46 @@ resource "helm_release" "secrets_provider_aws" {
   version    = var.helm_secrets_provider_aws_chart_version
 
   depends_on = [helm_release.csi_secrets_store]
+
+  set {
+    name  = "image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/aws-secrets-manager/secrets-store-csi-driver-provider-aws"
+  }
+
+  set {
+    name  = "image.tag"
+    value = "1.0.r2-50-g5b4aca1-2023.06.09.21.19"
+  }
+
 }
 
 ########
 # Secrets store - Reloader to restart pod when a kube secret changes
 ########
-resource "helm_release" "reloader" {
-  name       = var.helm_reloader_name
-  namespace  = var.k8s_kube_system_namespace
-  repository = var.helm_reloader_chart_repository
-  chart      = var.helm_reloader_chart_name
-  version    = var.helm_reloader_chart_version
+# resource "helm_release" "reloader" {
+#   name       = var.helm_reloader_name
+#   namespace  = var.k8s_kube_system_namespace
+#   repository = var.helm_reloader_chart_repository
+#   chart      = var.helm_reloader_chart_name
+#   version    = var.helm_reloader_chart_version
 
-  set {
-    name  = "deployment.reloadOnChange"
-    value = var.helm_reloader_enable_deployment_reload_on_change
-  }
+#   set {
+#     name = "reloader.deployment.image.name"
+#     value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ghcr/stakater/reloader"
+#   }
 
-  depends_on = [aws_eks_cluster.eks_cluster]
-}
+#   set {
+#     name = "reloader.deployment.image.tag"
+#     value = "v1.0.46"
+#   }
+
+#   set {
+#     name  = "deployment.reloadOnChange"
+#     value = var.helm_reloader_enable_deployment_reload_on_change
+#   }
+
+#   depends_on = [aws_eks_cluster.eks_cluster]
+# }
 
 ########
 # IAM role for service-account that needs Secret Manager access

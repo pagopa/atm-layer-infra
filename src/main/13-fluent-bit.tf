@@ -9,6 +9,11 @@ resource "helm_release" "fluent_bit" {
   version    = var.helm_fluent_bit_chart_version
 
   set {
+    name  = "image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit"
+  }
+
+  set {
     name  = "serviceAccount.create"
     value = var.helm_fluent_bit_create_serviceaccount
   }

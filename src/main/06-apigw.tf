@@ -8,6 +8,7 @@ locals {
     "task"       = aws_cognito_resource_server.resource.scope_identifiers
     "backoffice" = []
   }
+  api_gateway_custom_log_group = "/aws/apigateway/custom/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
 #########
@@ -426,12 +427,12 @@ resource "aws_api_gateway_stage" "stage" {
   access_log_settings {
     # destination_arn = "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api.id}/${var.environment}"
     destination_arn = aws_cloudwatch_log_group.api.arn
-    format          = "[$context.requestId] HTTP Method: $context.httpMethod - Resource Path: $context.resourcePath - Status: $context.status"
+    format          = "[$context.requestId] HTTP Method: $context.httpMethod - Resource Path: $context.path - Status: $context.status"
   }
 }
 
 resource "aws_cloudwatch_log_group" "api" {
-  name              = "/aws/apigateway/custom/${aws_api_gateway_rest_api.api.id}/${var.environment}"
+  name              = local.api_gateway_custom_log_group
   retention_in_days = 60
 
   tags_all = var.tags
@@ -597,4 +598,108 @@ resource "aws_cognito_user_pool_client" "client_backoffice" {
 resource "aws_cognito_user_pool_domain" "domain_backoffice" {
   domain       = "${local.namespace}-backoffice"
   user_pool_id = aws_cognito_user_pool.userpool_backoffice.id
+}
+
+#########
+# WAF - WEB ACL
+#########
+resource "aws_wafv2_web_acl" "web_acl_1" {
+  count = var.wafv2_enabled == true ? 1 : 0
+
+  name  = local.api_gateway_name
+  scope = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "AWS-AWSManagedRulesCommonRuleSet"
+    priority = 0
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWS-AWSManagedRulesCommonRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+  rule {
+    name     = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+  rule {
+    name     = "AWS-AWSManagedRulesSQLiRuleSet"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWS-AWSManagedRulesSQLiRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = local.api_gateway_name
+    sampled_requests_enabled   = true
+  }
+}
+
+resource "aws_wafv2_web_acl_association" "web_acl_1" {
+  count = var.wafv2_enabled == true ? 1 : 0
+
+  resource_arn = aws_api_gateway_stage.stage.arn
+  web_acl_arn  = aws_wafv2_web_acl.web_acl_1[0].arn
+}
+
+resource "aws_cloudwatch_log_group" "web_acl_1" {
+  count = var.wafv2_enabled == true ? 1 : 0
+
+  name = "aws-waf-logs-${local.api_gateway_name}"
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "web_acl_1" {
+  count = var.wafv2_enabled == true ? 1 : 0
+
+  log_destination_configs = [aws_cloudwatch_log_group.web_acl_1[0].arn]
+  resource_arn            = aws_wafv2_web_acl.web_acl_1[0].arn
 }

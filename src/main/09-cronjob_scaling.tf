@@ -164,6 +164,16 @@ resource "helm_release" "kube_downscaler" {
   depends_on = [aws_eks_cluster.eks_cluster]
 
   set {
+    name  = "image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/y0a2k3l9/sanoma-learning-mirror/hjacobs/kube-downscaler"
+  }
+
+  set {
+    name  = "image.tag"
+    value = "22.2.0"
+  }
+
+  set {
     name  = "deployment.environment.DEFAULT_UPTIME"
     value = var.helm_kube_downscaler_cronjob
   }

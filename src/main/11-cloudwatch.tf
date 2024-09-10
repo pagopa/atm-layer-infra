@@ -15,46 +15,26 @@ resource "aws_cloudwatch_dashboard" "overview" {
   "widgets": [
     {
       "type": "metric",
-      "x": 0,
+      "height": 6,
+      "width": 24,
       "y": 0,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          ["AWS/ApiGateway", "5XXError", 
-          "ApiName", "${local.api_gateway_name}", 
-          "Stage", "${var.environment}", 
-          { "stat": "Sum" }]
-        ],
-        "period": 300,
-        "region": "${var.aws_region}",
-        "title": "API Gateway 5XX Requests"
-      }
-    },
-    {
-      "type": "metric",
       "x": 0,
-      "y": 6,
-      "width": 12,
-      "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/ApiGateway", "4XXError", 
-          "ApiName", "${local.api_gateway_name}", 
-          "Stage", "${var.environment}", 
-          { "stat": "Sum" }]
+          ["AWS/ApiGateway", "5XXError", "ApiName", "${local.api_gateway_name}", "Stage", "${var.environment}", { "stat": "Sum" }],
+          [".", "4XXError", ".", ".", ".", ".", { "stat": "Sum" }]
         ],
         "period": 300,
         "region": "${var.aws_region}",
-        "title": "API Gateway 4XX Requests"
+        "title": "API Gateway 4XX & 5XX Requests"
       }
     },
     {
       "type": "metric",
-      "x": 12,
-      "y": 6,
-      "width": 12,
       "height": 6,
+      "width": 12,
+      "y": 6,
+      "x": 0,
       "properties": {
         "metrics": [
           ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", 
@@ -63,15 +43,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         ],
         "period": 300,
         "region": "${var.aws_region}",
-        "title": "EKS Nodes CPU Utilizations"
+        "title": "EKS Nodes CPU Utilization"
       }
     },
     {
       "type": "metric",
-      "x": 12,
-      "y": 12,
-      "width": 12,
       "height": 6,
+      "width": 12,
+      "y": 6,
+      "x": 12,
       "properties": {
         "metrics": [
           ["AWS/EC2", "NetworkIn", "AutoScalingGroupName", 
@@ -85,98 +65,21 @@ resource "aws_cloudwatch_dashboard" "overview" {
         "region": "${var.aws_region}",
         "title": "EKS Nodes Network Traffic"
       }
-    }
-  ]
-}
-EOF
-
-  depends_on = [aws_api_gateway_rest_api.api, aws_eks_node_group.eks_node_group]
-}
-
-resource "aws_cloudwatch_dashboard" "api_details" {
-  for_each = var.api_gateway_integrations
-
-  dashboard_name = "${local.dashboard_name}-${each.value.api_path}-api-details"
-
-  dashboard_body = <<EOF
-{
-  "widgets": [
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 0,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          ["AWS/ApiGateway", "5XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "GET", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }],
-          ["AWS/ApiGateway", "4XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "GET", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }]
-        ],
-        "period": 300,
-        "region": "${var.aws_region}",
-        "title": "GET ${each.value.api_path}/ API Error"
-      }
     },
     {
       "type": "metric",
       "x": 0,
-      "y": 6,
+      "y": 12,
       "width": 12,
       "height": 6,
       "properties": {
+        "view": "timeSeries",
+        "stacked": false,
         "metrics": [
-          ["AWS/ApiGateway", "5XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "POST", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }],
-          ["AWS/ApiGateway", "4XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "POST", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }]
+            [ "AWS/RDS", "CPUUtilization", "DBClusterIdentifier", "${aws_rds_cluster.rds.id}", { "period": 60 } ]
         ],
-        "period": 300,
         "region": "${var.aws_region}",
-        "title": "POST ${each.value.api_path}/ API Error"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 6,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          ["AWS/ApiGateway", "5XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "PUT", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }],
-          ["AWS/ApiGateway", "4XXError", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "PUT", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Sum" }]
-        ],
-        "period": 300,
-        "region": "${var.aws_region}",
-        "title": "PUT ${each.value.api_path}/ API Error"
+        "title": "RDS Instances CPU Utilization"
       }
     },
     {
@@ -186,30 +89,14 @@ resource "aws_cloudwatch_dashboard" "api_details" {
       "width": 12,
       "height": 6,
       "properties": {
-        "view": "singleValue",
-        "sparkline": false,
         "metrics": [
-          ["AWS/ApiGateway", "Latency", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "GET", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Average", "period": 300 }],
-          ["AWS/ApiGateway", "Latency", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "POST", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Average", "period": 300 }],
-          ["AWS/ApiGateway", "Latency", 
-            "ApiName", "${local.api_gateway_name}", 
-            "Method", "PUT", 
-            "Resource", "/api/v1/${each.value.api_path}/{proxy+}", 
-            "Stage", "${var.environment}", 
-            { "stat": "Average", "period": 300 }]
+            [ "AWS/RDS", "DatabaseConnections", "DBClusterIdentifier", "${aws_rds_cluster.rds.id}", { "period": 60 } ]
         ],
+        "view": "timeSeries",
+        "stacked": false,
         "region": "${var.aws_region}",
-        "title": "${each.value.api_path}/ API Latency"
+        "title": "RDS Instances DB Connections",
+        "period": 300
       }
     }
   ]
@@ -217,6 +104,241 @@ resource "aws_cloudwatch_dashboard" "api_details" {
 EOF
 
   depends_on = [aws_api_gateway_rest_api.api, aws_eks_node_group.eks_node_group]
+}
+
+resource "aws_cloudwatch_dashboard" "availability" {
+  dashboard_name = "${local.dashboard_name}-availability"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        height = 4
+        width  = 10
+        y      = 0
+        x      = 0
+        type   = "log"
+        properties = {
+          query   = "SOURCE '${local.api_gateway_custom_log_group}' ${var.cloudwatch_dashboard_availability_query}"
+          region  = "${var.aws_region}"
+          stacked = false
+          title   = "Log group: ${local.api_gateway_custom_log_group}"
+          view    = "table"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_cloudwatch_dashboard" "latency" {
+  dashboard_name = "${local.dashboard_name}-latency"
+
+  dashboard_body = <<EOF
+{
+    "widgets": [
+        {
+            "height": 4,
+            "width": 15,
+            "y": 0,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '/aws/lambda/latency-logging' | fields @timestamp, @message\n| filter @message like /Latency Internal.*?\\[ms\\] = (\\d+)/ or @message like /Latency External.*?\\[ms\\] = (\\d+)/\n| parse @message /Latency Internal.*?\\[ms\\] = (?<internal_latency>\\d+)/\n| parse @message /Latency External.*?\\[ms\\] = (?<external_latency>\\d+)/\n| stats \n    round(avg(internal_latency), 2) as avg_internal_latency, \n    round(avg(external_latency), 2) as avg_external_latency,\n    round(if((avg(internal_latency) - 250) < 0, 0, ((avg(internal_latency) - 250) / 250) * 100 - 0.10), 2) as percent_internal_latency_exceeding,\n    round(if((avg(external_latency) - 5000) < 0, 0, ((avg(external_latency) - 5000) / 5000) * 100 - 0.10), 2) as percent_external_latency_exceeding\n",
+                "region": "${var.aws_region}",
+                "stacked": false,
+                "title": "Indicatori di monitoraggio latenza",
+                "view": "table"
+            }
+        }
+    ]
+}
+EOF
+}
+
+########
+# Cloudwatch - Eventbridge + Lambda for monitoring availability
+########
+resource "aws_iam_role" "lambda_monitoring_role" {
+  name = "Monitoring-Lambda-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_monitoring_policy" {
+  name = "lambda_monitoring_policy"
+  role = aws_iam_role.lambda_monitoring_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "logs:*",
+          "sns:*",
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+        }, {
+        Action = [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:PutItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ],
+        Effect = "Allow",
+        Resource = [
+          "${aws_dynamodb_table.monitoring.arn}"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_lambda_monitoring_basic_execution" {
+  role       = aws_iam_role.lambda_monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_lambda_function" "monitoring_availability" {
+  function_name = "${local.namespace}-monitoring-availability"
+  role          = aws_iam_role.lambda_monitoring_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_function_runtime
+  filename      = "lambdas/${var.environment}/monitoring_availability/lambda_function_payload.zip"
+
+  environment {
+    variables = {
+      LOG_GROUP                         = local.api_gateway_custom_log_group
+      NAMESPACE                         = local.namespace
+      ENV                               = upper(var.environment)
+      MONITORING_ALERT_TOPIC_ARN        = aws_sns_topic.monitoring_alert.arn
+      MONITORING_NOTIFICATION_TOPIC_ARN = aws_sns_topic.monitoring_notification.arn
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "monitoring_availability" {
+  name                = "${local.namespace}-monitoring-availability"
+  schedule_expression = "cron(5/15 * * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "monitoring_availability" {
+  rule      = aws_cloudwatch_event_rule.monitoring_availability.name
+  target_id = "start-monitoring-availability"
+  arn       = aws_lambda_function.monitoring_availability.arn
+}
+
+resource "aws_lambda_permission" "allow_monitoring_availability" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.monitoring_availability.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.monitoring_availability.arn
+}
+
+########
+# Cloudwatch - Eventbridge + Lambda for monitoring latency
+########
+resource "aws_lambda_function" "monitoring_latency" {
+  function_name = "${local.namespace}-monitoring-latency"
+  role          = aws_iam_role.lambda_monitoring_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_function_runtime
+  filename      = "lambdas/${var.environment}/monitoring_latency/lambda_function_payload.zip"
+
+  environment {
+    variables = {
+      LOG_GROUP                         = "/aws/lambda/latency-logging"
+      NAMESPACE                         = local.namespace
+      ENV                               = upper(var.environment)
+      MONITORING_ALERT_TOPIC_ARN        = aws_sns_topic.monitoring_alert.arn
+      MONITORING_NOTIFICATION_TOPIC_ARN = aws_sns_topic.monitoring_notification.arn
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "monitoring_latency" {
+  name                = "${local.namespace}-monitoring-latency"
+  schedule_expression = "cron(0 */6 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "monitoring_latency" {
+  rule      = aws_cloudwatch_event_rule.monitoring_latency.name
+  target_id = "start-monitoring-latency"
+  arn       = aws_lambda_function.monitoring_latency.arn
+}
+
+resource "aws_lambda_permission" "allow_monitoring_latency" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.monitoring_latency.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.monitoring_latency.arn
+}
+
+########
+# SNS - topic + subscription for latency dashboard
+########
+resource "aws_sns_topic" "monitoring_alert" {
+  name            = "${local.namespace}-monitoring-alert"
+  delivery_policy = <<EOF
+{
+  "http": {
+    "defaultHealthyRetryPolicy": {
+      "minDelayTarget": 20,
+      "maxDelayTarget": 20,
+      "numRetries": 3,
+      "numMaxDelayRetries": 0,
+      "numNoDelayRetries": 0,
+      "numMinDelayRetries": 0,
+      "backoffFunction": "linear"
+    },
+    "disableSubscriptionOverrides": false,
+    "defaultRequestPolicy": {
+      "headerContentType": "text/plain; charset=UTF-8"
+    }
+  }
+}
+EOF
+}
+
+resource "aws_sns_topic" "monitoring_notification" {
+  name            = "${local.namespace}-monitoring-notification"
+  delivery_policy = <<EOF
+{
+  "http": {
+    "defaultHealthyRetryPolicy": {
+      "minDelayTarget": 20,
+      "maxDelayTarget": 20,
+      "numRetries": 3,
+      "numMaxDelayRetries": 0,
+      "numNoDelayRetries": 0,
+      "numMinDelayRetries": 0,
+      "backoffFunction": "linear"
+    },
+    "disableSubscriptionOverrides": false,
+    "defaultRequestPolicy": {
+      "headerContentType": "text/plain; charset=UTF-8"
+    }
+  }
+}
+EOF
 }
 
 ########

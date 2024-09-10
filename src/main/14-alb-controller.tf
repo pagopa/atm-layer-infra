@@ -13,6 +13,11 @@ resource "helm_release" "alb_controller" {
   ]
 
   set {
+    name  = "image.repository"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller"
+  }
+
+  set {
     name  = "clusterName"
     value = aws_eks_cluster.eks_cluster.name
   }

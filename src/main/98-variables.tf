@@ -67,6 +67,14 @@ variable "vpc_endpoints" {
   description = "Map of VPC Endpoints"
 }
 
+variable "prefix_list_entries" {
+  type = list(object({
+    cidr        = string
+    description = string
+  }))
+  description = "Public IP of external services."
+}
+
 variable "sns_aws_ip_range_topic" {
   type        = string
   default     = "arn:aws:sns:us-east-1:806199016981:AmazonIpSpaceChanged"
@@ -829,6 +837,15 @@ variable "s3_allow_ssl_only_policy" {
 EOF
 }
 
+variable "cloudwatch_dashboard_availability_query" {
+  type        = string
+  description = "Log Insight query to export data for dashboard availability"
+}
+
+variable "wafv2_enabled" {
+  type        = bool
+  description = "If WAF is enabled."
+}
 
 variable "tags" {
   type = map(any)

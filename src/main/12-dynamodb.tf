@@ -1,15 +1,17 @@
 locals {
   table_name_trace_logs         = "pagopa-atm-layer-wf-task-trace-logs"
   table_name_instance_variables = "pagopa-atm-layer-wf-process-instance-variables"
+  table_name_monitoring         = "pagopa-atm-layer-monitoring"
 }
 
 #######
 # DynamoDB Table - To enable trace log
 ########
 resource "aws_dynamodb_table" "trace_log" {
-  name         = local.table_name_trace_logs
-  hash_key     = "id"
-  billing_mode = "PAY_PER_REQUEST"
+  name                        = local.table_name_trace_logs
+  hash_key                    = "id"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
 
   attribute {
     name = "id"
@@ -54,9 +56,11 @@ resource "aws_iam_role_policy_attachment" "eks_pod_3" {
 # DynamoDB Table - To manage Camunda variable
 ########
 resource "aws_dynamodb_table" "instance_variables" {
-  name         = local.table_name_instance_variables
-  hash_key     = "name"
-  billing_mode = "PAY_PER_REQUEST"
+  name                        = local.table_name_instance_variables
+  hash_key                    = "name"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+
 
   attribute {
     name = "name"
@@ -96,3 +100,19 @@ resource "aws_iam_role_policy_attachment" "eks_pod_4" {
   policy_arn = aws_iam_policy.dynamo_process_eks_pod.arn
   role       = aws_iam_role.eks_serviceaccount["atm_layer_wf_process"].name
 }
+
+#######
+# DynamoDB Table - To track monitoring ticket
+########
+resource "aws_dynamodb_table" "monitoring" {
+  name                        = local.table_name_monitoring
+  hash_key                    = "id"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+

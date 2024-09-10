@@ -123,11 +123,11 @@ resource "aws_route_table" "priv_1" {
   }
 }
 
-resource "aws_route" "priv_1_route_1" {
-  route_table_id         = aws_route_table.priv_1.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_1.id
-}
+# resource "aws_route" "priv_1_route_1" {
+#   route_table_id         = aws_route_table.priv_1.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.nat_1.id
+# }
 
 resource "aws_route_table_association" "priv_1" {
   subnet_id      = aws_subnet.priv_subnet_1.id
@@ -141,11 +141,11 @@ resource "aws_route_table" "priv_2" {
   }
 }
 
-resource "aws_route" "priv_2_route_1" {
-  route_table_id         = aws_route_table.priv_2.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_2.id
-}
+# resource "aws_route" "priv_2_route_1" {
+#   route_table_id         = aws_route_table.priv_2.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.nat_2.id
+# }
 
 resource "aws_route_table_association" "priv_2" {
   subnet_id      = aws_subnet.priv_subnet_2.id
@@ -159,11 +159,11 @@ resource "aws_route_table" "priv_3" {
   }
 }
 
-resource "aws_route" "priv_3_route_1" {
-  route_table_id         = aws_route_table.priv_3.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_3.id
-}
+# resource "aws_route" "priv_3_route_1" {
+#   route_table_id         = aws_route_table.priv_3.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.nat_3.id
+# }
 
 resource "aws_route_table_association" "priv_3" {
   subnet_id      = aws_subnet.priv_subnet_3.id
@@ -390,6 +390,8 @@ resource "aws_lambda_function" "update_prefix_list" {
       PREFIX_LIST_ID = aws_ec2_managed_prefix_list.cognito_prefix_list.id
     }
   }
+
+  depends_on = [aws_ec2_managed_prefix_list.cognito_prefix_list]
 }
 
 resource "aws_lambda_permission" "allow_sns" {
@@ -405,7 +407,7 @@ resource "aws_lambda_permission" "allow_sns" {
 resource "aws_ec2_managed_prefix_list" "cognito_prefix_list" {
   name           = "${local.namespace}-cognito-prefix-list"
   address_family = "IPv4"
-  max_entries    = 150
+  max_entries    = 400
   tags = {
     Name = "CognitoPrefixList"
   }
@@ -429,3 +431,42 @@ resource "aws_route" "priv_3_route_2" {
   nat_gateway_id             = aws_nat_gateway.nat_3.id
 }
 
+########
+# PagoPA prefix-list
+########
+
+resource "aws_ec2_managed_prefix_list" "mil_idpay_prefix_list" {
+  name           = "${local.namespace}-mil-idpay-prefix-list"
+  address_family = "IPv4"
+  max_entries    = 5
+
+  dynamic "entry" {
+    for_each = var.prefix_list_entries
+    content {
+      cidr        = entry.value.cidr
+      description = entry.value.description
+    }
+  }
+
+  tags = {
+    Name = "MILIdPayPrefixList"
+  }
+}
+
+resource "aws_route" "priv_1_route_3" {
+  route_table_id             = aws_route_table.priv_1.id
+  destination_prefix_list_id = aws_ec2_managed_prefix_list.mil_idpay_prefix_list.id
+  nat_gateway_id             = aws_nat_gateway.nat_1.id
+}
+
+resource "aws_route" "priv_2_route_3" {
+  route_table_id             = aws_route_table.priv_2.id
+  destination_prefix_list_id = aws_ec2_managed_prefix_list.mil_idpay_prefix_list.id
+  nat_gateway_id             = aws_nat_gateway.nat_2.id
+}
+
+resource "aws_route" "priv_3_route_3" {
+  route_table_id             = aws_route_table.priv_3.id
+  destination_prefix_list_id = aws_ec2_managed_prefix_list.mil_idpay_prefix_list.id
+  nat_gateway_id             = aws_nat_gateway.nat_3.id
+}

@@ -1,6 +1,6 @@
 locals {
   jaeger_cluster_name     = "${local.namespace}-jaeger"
-  opensearch_cluster_name = "${local.namespace}-elastic"
+  opensearch_cluster_name = "${local.namespace}-opensearch-elastic"
 }
 
 ########
@@ -16,8 +16,8 @@ resource "helm_release" "jeager" {
   version    = var.helm_jaeger_chart_version
 
   set {
-    name  = "provisionDataStore.cassandra"
-    value = var.helm_jaeger_provisionDataStore_cassandra
+    name  = "allInOne.image"
+    value = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/quay/jaegertracing/all-in-one"
   }
 
   set {
@@ -48,6 +48,11 @@ resource "helm_release" "jeager" {
   set {
     name  = "query.enabled"
     value = var.helm_jaeger_query_enabled
+  }
+
+  set {
+    name  = "provisionDataStore.cassandra"
+    value = var.helm_jaeger_provisionDataStore_cassandra
   }
 }
 

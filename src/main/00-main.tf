@@ -20,7 +20,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
 
   default_tags {
     tags = var.tags
@@ -28,8 +28,8 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "ireland"
-  region = var.aws_secondary_region
+  alias   = "ireland"
+  region  = var.aws_secondary_region
 
   default_tags {
     tags = var.tags
@@ -37,8 +37,8 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "nvirginia"
-  region = var.aws_nvirginia_region
+  alias   = "nvirginia"
+  region  = var.aws_nvirginia_region
 
   default_tags {
     tags = var.tags
