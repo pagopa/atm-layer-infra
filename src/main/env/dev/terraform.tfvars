@@ -119,15 +119,23 @@ helm_kube_downscaler_cronjob = "Mon-Fri 08:35-19:15 Europe/Rome"
 
 eks_addons = {
   coredns = {
-    name = "coredns"
+    name             = "coredns"
+    version          = "v1.11.1-eksbuild.8"
+    resolve_conflict = "NONE"
   },
   kube-proxy = {
-    name = "kube-proxy"
+    name             = "kube-proxy"
+    version          = "v1.30.0-eksbuild.3"
+    resolve_conflict = "NONE"
   },
   vpc-cni = {
-    name = "vpc-cni"
+    name             = "vpc-cni"
+    version          = "v1.18.1-eksbuild.3"
+    resolve_conflict = "PRESERVE"
   }
 }
+eks_node_group_version = "1.30.2-20240904"
+eks_kubernetes_version = "1.30"
 
 rds_cluster_name                    = "rds"
 rds_cluster_engine_version          = "15.4"
@@ -189,7 +197,11 @@ k8s_config_map_aws_auth_readonly_sso   = "AWSReservedSSO_AWSReadOnlyAccess_666d6
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
-cdn_path = "RESOURCE"
+cdn_path                    = "RESOURCE"
+cdn_resources_alias_prefix  = "resources.dev"
+cdn_webconsole_alias_prefix = "webconsole.dev"
+cdn_emulator_alias_prefix   = "emulator.dev"
+acm_prefix_domain           = "*.dev"
 
 kms_keys = {
   backup = {
@@ -271,9 +283,9 @@ services = {
   atm_layer_mil_adapter = {
     name = "mil-adapter"
   },
-  atm_layer_mil_authenticator = {
-    name = "mil-authenticator"
-  },
+  # atm_layer_mil_authenticator = {
+  #   name = "mil-authenticator"
+  # },
   atm_layer_wf_process = {
     name = "wf-process"
   },
@@ -308,14 +320,6 @@ api_gateway_authorizers = {
 
 # Add service here to create API Gateway integrations and Cloudwatch dashboard
 api_gateway_integrations = {
-  quarkus_hello_world = {
-    api_path         = "microservice5",
-    api_uri          = "microservice5/{proxy}/",
-    api_key_required = false,
-    methods_allowed  = ["GET"]
-    authorization    = false,
-    authorizer       = ""
-  },
   atm_layer_wf_task = {
     api_path         = "tasks",
     api_uri          = "api/v1/tasks/{proxy}/",
@@ -324,22 +328,22 @@ api_gateway_integrations = {
     authorization    = true,
     authorizer       = "task"
   },
-  atm_layer_model = {
-    api_path         = "model",
-    api_uri          = "api/v1/model/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
-  },
-  atm_layer_transaction_service = {
-    api_path         = "transaction-service",
-    api_uri          = "api/v1/transaction-service/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
-  },
+  # atm_layer_model = {
+  #   api_path         = "model",
+  #   api_uri          = "api/v1/model/{proxy}/",
+  #   api_key_required = true,
+  #   methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+  #   authorization    = false,
+  #   authorizer       = ""
+  # },
+  # atm_layer_transaction_service = {
+  #   api_path         = "transaction-service",
+  #   api_uri          = "api/v1/transaction-service/{proxy}/",
+  #   api_key_required = true,
+  #   methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+  #   authorization    = false,
+  #   authorizer       = ""
+  # },
   atm_layer_console_service = { # da mettere JWT
     api_path         = "console-service",
     api_uri          = "api/v1/console-service/{proxy}/",
@@ -348,16 +352,17 @@ api_gateway_integrations = {
     authorization    = false,
     authorizer       = "backoffice"
   },
-  atm_layer_user_service = { # da togliere
-    api_path         = "user-service",
-    api_uri          = "api/v1/user-service/{proxy}/",
-    api_key_required = false,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
-  },
+  # atm_layer_user_service = { # da togliere
+  #   api_path         = "user-service",
+  #   api_uri          = "api/v1/user-service/{proxy}/",
+  #   api_key_required = false,
+  #   methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+  #   authorization    = false,
+  #   authorizer       = ""
+  # },
 }
 
-cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/console-service\\/task\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 429 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
+cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/console-service\\/task\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
 
-wafv2_enabled = false
+wafv2_enabled              = false
+monitoring_changes_enabled = false

@@ -2,6 +2,7 @@ locals {
   dashboard_name               = "${local.namespace}-dashboard"
   lambda_s3_function_name      = "${local.namespace}-${var.lambda_s3_function_name}"
   lambda_latency_function_name = "latency-logging"
+  lambda_changes_function_name = "${local.namespace}-monitoring-changes"
 }
 
 ########
@@ -383,6 +384,13 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         ],
         Resource = "*",
         Effect   = "Allow",
+      },
+      {
+        Action = [
+          "sns:*"
+        ],
+        Resource = "*",
+        Effect   = "Allow",
       }
     ]
   })
@@ -475,4 +483,104 @@ EOF
 resource "aws_iam_role_policy_attachment" "eks_pod_6" {
   policy_arn = aws_iam_policy.lambda_task_eks_pod.arn
   role       = aws_iam_role.eks_serviceaccount["atm_layer_wf_task"].name
+}
+
+########
+# Monitoring - Track VPC changes
+########
+resource "aws_lambda_function" "changes" {
+  count = var.monitoring_changes_enabled == true ? 1 : 0
+
+  function_name = local.lambda_changes_function_name
+  role          = aws_iam_role.lambda_s3_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_function_runtime
+  filename      = "lambdas/${var.environment}/monitoring_changes/lambda_function_payload.zip"
+  timeout       = 120
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.priv_subnet_1.id, aws_subnet.priv_subnet_2.id, aws_subnet.priv_subnet_3.id]
+    security_group_ids = [aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id]
+  }
+
+  environment {
+    variables = {
+      NAMESPACE                    = local.namespace
+      ENV                          = upper(var.environment)
+      MONITORING_CHANGES_TOPIC_ARN = aws_sns_topic.monitoring_changes[0].arn
+    }
+  }
+
+}
+
+resource "aws_cloudwatch_event_rule" "changes" {
+  count = var.monitoring_changes_enabled == true ? 1 : 0
+
+  name = "${local.namespace}-track-cw-monitoring-changes"
+  event_pattern = jsonencode({
+    source = [
+      "aws.ec2"
+    ],
+    detail-type = [
+      "AWS Console Sign In via CloudTrail"
+    ],
+    detail = {
+      eventSource = ["ec2.amazonaws.com"],
+      eventName = [
+        "CreateRoute",
+        "DeleteRoute",
+        "ReplaceRouteTableAssociation",
+        "AuthorizeSecurityGroupIngress",
+        "AuthorizeSecurityGroupEgress",
+        "RevokeSecurityGroupIngress",
+        "RevokeSecurityGroupEgress",
+        "CreateSecurityGroup",
+        "DeleteSecurityGroup",
+        "ModifySecurityGroupRules"
+      ]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "changes" {
+  count = var.monitoring_changes_enabled == true ? 1 : 0
+
+  rule      = aws_cloudwatch_event_rule.changes[0].name
+  target_id = "track-cw-monitoring-changes"
+  arn       = aws_lambda_function.changes[0].arn
+}
+
+resource "aws_lambda_permission" "changes" {
+  count = var.monitoring_changes_enabled == true ? 1 : 0
+
+  statement_id  = "AllowExecutionFromCloudWatchTriggerMonitoringChanges"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.changes[0].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.changes[0].arn
+}
+
+resource "aws_sns_topic" "monitoring_changes" {
+  count = var.monitoring_changes_enabled == true ? 1 : 0
+
+  name            = "${local.namespace}-monitoring-changes"
+  delivery_policy = <<EOF
+{
+  "http": {
+    "defaultHealthyRetryPolicy": {
+      "minDelayTarget": 20,
+      "maxDelayTarget": 20,
+      "numRetries": 3,
+      "numMaxDelayRetries": 0,
+      "numNoDelayRetries": 0,
+      "numMinDelayRetries": 0,
+      "backoffFunction": "linear"
+    },
+    "disableSubscriptionOverrides": false,
+    "defaultRequestPolicy": {
+      "headerContentType": "text/plain; charset=UTF-8"
+    }
+  }
+}
+EOF
 }

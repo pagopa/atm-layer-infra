@@ -40,6 +40,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  version                   = var.eks_kubernetes_version
 
   vpc_config {
     subnet_ids = [
@@ -71,8 +72,10 @@ resource "aws_eks_cluster" "eks_cluster" {
 resource "aws_eks_addon" "addon" {
   for_each = var.eks_addons
 
-  cluster_name = aws_eks_cluster.eks_cluster.name
-  addon_name   = each.value.name
+  cluster_name                = aws_eks_cluster.eks_cluster.name
+  addon_name                  = each.value.name
+  addon_version               = each.value.version
+  resolve_conflicts_on_update = each.value.resolve_conflict
 }
 
 ########
@@ -248,6 +251,12 @@ resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = local.eks_node_group_name
   node_role_arn   = aws_iam_role.eks_nodes.arn
+
+  ami_type             = "AL2_x86_64"
+  release_version      = var.eks_node_group_version
+  version              = var.eks_kubernetes_version
+  force_update_version = false
+
   subnet_ids = [
     aws_subnet.priv_subnet_1.id,
     aws_subnet.priv_subnet_2.id,

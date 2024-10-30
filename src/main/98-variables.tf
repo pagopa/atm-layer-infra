@@ -133,9 +133,21 @@ variable "eks_scale_up_cron" {
 
 variable "eks_addons" {
   type = map(object({
-    name = string
+    name             = string
+    version          = string
+    resolve_conflict = string
   }))
   description = "Map of EKS Addons"
+}
+
+variable "eks_kubernetes_version" {
+  type        = string
+  description = "EKS Cluster kubernetes version."
+}
+
+variable "eks_node_group_version" {
+  type        = string
+  description = "EKS Cluster node group AMI version."
 }
 
 variable "alb_https_port" {
@@ -626,6 +638,21 @@ variable "cdn_path" {
   description = "Path where upload S3 object"
 }
 
+variable "cdn_resources_alias_prefix" {
+  type        = string
+  description = "CDN Prefix"
+}
+
+variable "cdn_webconsole_alias_prefix" {
+  type        = string
+  description = "CDN Prefix"
+}
+
+variable "cdn_emulator_alias_prefix" {
+  type        = string
+  description = "CDN Prefix"
+}
+
 variable "kms_keys" {
   type = map(object({
     description     = string
@@ -733,6 +760,17 @@ variable "cdn_cache_policy_enabled_id" {
   type        = string
   default     = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Cache optimized for S3
   description = "S3 optimized cache for CloudFront distribution cache policy"
+}
+
+variable "route53_hosted_zone" {
+  type        = string
+  default     = "atmlayer-pagopa.it"
+  description = "Hosted zone created for the project"
+}
+
+variable "acm_prefix_domain" {
+  type        = string
+  description = "Prefix for ACM certificate"
 }
 
 variable "services" {
@@ -845,6 +883,11 @@ variable "cloudwatch_dashboard_availability_query" {
 variable "wafv2_enabled" {
   type        = bool
   description = "If WAF is enabled."
+}
+
+variable "monitoring_changes_enabled" {
+  type        = bool
+  description = "If Monitoring changes is enabled."
 }
 
 variable "tags" {

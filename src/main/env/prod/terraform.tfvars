@@ -108,7 +108,7 @@ eks_cluster_scaling_min     = 3
 eks_cluster_scaling_max     = 3
 eks_cluster_scaling_desired = 3
 eks_node_group_name         = "eks-node-group"
-eks_node_group_type         = ["t3.large"]
+eks_node_group_type         = ["c6i.xlarge"] # c6i.xlarge t3.large
 
 # EKS Cronjob
 eks_scale_down_cron = "30 19 * * *"   # TURN OFF Ogni giorno alle 19:30 Rome
@@ -119,15 +119,23 @@ helm_kube_downscaler_cronjob = "Mon-Fri 08:50-19:15 Europe/Rome"
 
 eks_addons = {
   coredns = {
-    name = "coredns"
+    name             = "coredns"
+    version          = "v1.11.1-eksbuild.8"
+    resolve_conflict = "NONE"
   },
   kube-proxy = {
-    name = "kube-proxy"
+    name             = "kube-proxy"
+    version          = "v1.30.0-eksbuild.3"
+    resolve_conflict = "NONE"
   },
   vpc-cni = {
-    name = "vpc-cni"
+    name             = "vpc-cni"
+    version          = "v1.18.1-eksbuild.3"
+    resolve_conflict = "PRESERVE"
   }
 }
+eks_node_group_version = "1.30.2-20240904"
+eks_kubernetes_version = "1.30"
 
 rds_cluster_name                    = "rds"
 rds_cluster_engine_version          = "15.4"
@@ -189,7 +197,11 @@ k8s_config_map_aws_auth_readonly_sso   = "AWSReservedSSO_AWSReadOnlyAccess_ca5cd
 k8s_config_map_aws_auth_terraform_user = "terraform_user"
 k8s_config_map_aws_auth_github_user    = "GitHubActionIACRole"
 
-cdn_path = "RESOURCE"
+cdn_path                    = "RESOURCE"
+cdn_resources_alias_prefix  = "resources"
+cdn_webconsole_alias_prefix = "webconsole"
+cdn_emulator_alias_prefix   = "emulator"
+acm_prefix_domain           = "*"
 
 kms_keys = {
   backup = {
@@ -268,9 +280,9 @@ services = {
   atm_layer_mil_adapter = {
     name = "mil-adapter"
   },
-  atm_layer_mil_authenticator = {
-    name = "mil-authenticator"
-  },
+  # atm_layer_mil_authenticator = {
+  #   name = "mil-authenticator"
+  # },
   atm_layer_wf_process = {
     name = "wf-process"
   },
@@ -313,14 +325,6 @@ api_gateway_integrations = {
     authorization    = true,
     authorizer       = "task"
   },
-  atm_layer_transaction_service = {
-    api_path         = "transaction-service",
-    api_uri          = "api/v1/transaction-service/{proxy}/",
-    api_key_required = true,
-    methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
-    authorizer       = ""
-  },
   atm_layer_console_service = {
     api_path         = "console-service",
     api_uri          = "api/v1/console-service/{proxy}/",
@@ -331,6 +335,7 @@ api_gateway_integrations = {
   }
 }
 
-cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/tasks\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 429 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
+cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/tasks\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
 
-wafv2_enabled = true
+wafv2_enabled              = true
+monitoring_changes_enabled = true

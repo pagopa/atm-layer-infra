@@ -288,6 +288,7 @@ resource "aws_s3_bucket_replication_configuration" "s3_replication" {
 # Cloudfront - CDN for primary S3 bucket
 ########
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  aliases = ["${var.cdn_resources_alias_prefix}.${var.route53_hosted_zone}"]
   origin {
     domain_name              = aws_s3_bucket.s3.bucket_regional_domain_name
     origin_id                = local.s3_name_model
@@ -297,7 +298,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   enabled         = true
   is_ipv6_enabled = true
-  comment         = "CDN for ATM BMPN"
+  comment         = "CDN for ATM BPMN and web resources"
   http_version    = "http2"
 
   default_cache_behavior {
@@ -319,7 +320,10 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = aws_acm_certificate.cert.arn
+    cloudfront_default_certificate = false
+    minimum_protocol_version       = "TLSv1.2_2021"
+    ssl_support_method             = "sni-only"
   }
 }
 
@@ -464,6 +468,7 @@ resource "aws_s3_bucket_versioning" "s3_webconsole" {
 # Cloudfront - CDN for S3 bucket web console
 ########
 resource "aws_cloudfront_distribution" "s3_webconsole_distribution" {
+  aliases = ["${var.cdn_webconsole_alias_prefix}.${var.route53_hosted_zone}"]
   origin {
     domain_name              = aws_s3_bucket.s3_webconsole.bucket_regional_domain_name
     origin_id                = local.s3_name_webconsole
@@ -494,7 +499,10 @@ resource "aws_cloudfront_distribution" "s3_webconsole_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = aws_acm_certificate.cert.arn
+    cloudfront_default_certificate = false
+    minimum_protocol_version       = "TLSv1.2_2021"
+    ssl_support_method             = "sni-only"
   }
 
   custom_error_response {
@@ -619,9 +627,10 @@ resource "aws_s3_bucket_versioning" "s3_emulator" {
 }
 
 ########
-# Cloudfront - CDN for S3 bucket web console
+# Cloudfront - CDN for S3 bucket emulator
 ########
 resource "aws_cloudfront_distribution" "s3_emulator_distribution" {
+  aliases = ["${var.cdn_emulator_alias_prefix}.${var.route53_hosted_zone}"]
   origin {
     domain_name              = aws_s3_bucket.s3_emulator.bucket_regional_domain_name
     origin_id                = local.s3_name_emulator
@@ -652,7 +661,10 @@ resource "aws_cloudfront_distribution" "s3_emulator_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = aws_acm_certificate.cert.arn
+    cloudfront_default_certificate = false
+    minimum_protocol_version       = "TLSv1.2_2021"
+    ssl_support_method             = "sni-only"
   }
 
   custom_error_response {
@@ -718,6 +730,16 @@ resource "aws_s3_bucket_policy" "s3_emulator_policy" {
 }
 
 ########
+# ACM - TLS Certificate
+########
+resource "aws_acm_certificate" "cert" {
+  provider = aws.nvirginia
+
+  domain_name       = "${var.acm_prefix_domain}.${var.route53_hosted_zone}"
+  validation_method = "DNS"
+}
+
+########
 # S3 Bucket - backup logs
 ########
 resource "aws_s3_bucket" "s3_backup_logs" {
@@ -752,7 +774,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "s3_backup_logs" {
     status = "Enabled"
 
     expiration {
-      days = 365 * 5
+      days = 400 # 13 mesi
     }
 
     filter {
