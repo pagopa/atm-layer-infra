@@ -2,6 +2,9 @@ name: apply
 description: "Run terraform apply"
 
 inputs:
+  google-client-id:
+    required: true
+    description: "Google client id"
   google-client-secret:
     required: true
     description: "Google client secret"
@@ -41,6 +44,6 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         e=${{ inputs.env }}
-        export TF_VAR_cognito_google_idp_client_secret=${{ secrets.GOOGLE_CLIENT_SECRET }}
-        export TF_VAR_cognito_google_idp_client_id=${{ secrets.GOOGLE_CLIENT_ID }}
+        export TF_VAR_cognito_google_idp_client_secret=${{ inputs.google-client-secret }}
+        export TF_VAR_cognito_google_idp_client_id=${{ inputs.google-client-id }}
         ./terraform.sh apply ${e%"_w"} -auto-approve

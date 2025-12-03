@@ -56,6 +56,7 @@ jobs:
         with:
           env: ${{ inputs.environment }}
           google-client-secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          google-client-id: ${{ secrets.GOOGLE_CLIENT_ID }}
           working-directory: src/main
 
   merge-trigger:
