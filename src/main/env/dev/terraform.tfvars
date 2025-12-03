@@ -303,6 +303,9 @@ services = {
   },
   atm_layer_user_service = {
     name = "user-service"
+  },
+  atm_layer_reporting_service = {
+    name = "reporting-service"
   }
 }
 
