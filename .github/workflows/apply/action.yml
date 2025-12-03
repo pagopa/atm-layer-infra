@@ -2,6 +2,9 @@ name: apply
 description: "Run terraform apply"
 
 inputs:
+  google-client-secret:
+    required: true
+    description: "Google client secret"
   env:
     required: true
     type: string

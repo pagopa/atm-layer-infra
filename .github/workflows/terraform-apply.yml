@@ -55,6 +55,7 @@ jobs:
         uses: ./.github/workflows/apply
         with:
           env: ${{ inputs.environment }}
+          google-client-secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           working-directory: src/main
 
   merge-trigger:
