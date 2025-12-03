@@ -134,11 +134,11 @@ eks_addons = {
     resolve_conflict = "PRESERVE"
   }
 }
-eks_node_group_version = "1.30.2-20240904"
-eks_kubernetes_version = "1.30"
+eks_node_group_version = "1.32.7-20250821"
+eks_kubernetes_version = "1.32"
 
 rds_cluster_name                    = "rds"
-rds_cluster_engine_version          = "15.4"
+rds_cluster_engine_version          = "15.12"
 rds_cluster_db_name                 = "pagopadb"
 rds_cluster_port                    = 5431
 rds_cluster_master_username         = "pagopaadmin"
