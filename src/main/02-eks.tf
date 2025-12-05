@@ -700,15 +700,15 @@ resource "aws_secretsmanager_secret_policy" "idpay_secret_manager_policy" {
 }
 
 ########
-# Secret Manager - nodo (add manually the secrets value after pod deployment)
+# Secret Manager - node (add manually the secrets value after pod deployment)
 ########
-resource "aws_secretsmanager_secret" "nodo_secret_manager" {
-  name        = "${local.namespace}/nodo/credentials"
-  description = "nodo API Key"
+resource "aws_secretsmanager_secret" "node_secret_manager" {
+  name        = "${local.namespace}/node/credentials"
+  description = "node API Key"
 }
 
-resource "aws_secretsmanager_secret_policy" "nodo_secret_manager_policy" {
-  secret_arn = aws_secretsmanager_secret.nodo_secret_manager.arn
+resource "aws_secretsmanager_secret_policy" "node_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.node_secret_manager.arn
 
   policy = jsonencode({
     Version = "2012-10-17",
