@@ -339,7 +339,15 @@ api_gateway_integrations = {
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
     authorization    = false,
     authorizer       = "backoffice"
-  }
+  },
+    atm_layer_reporting_service = {
+    api_path         = "reporting-service",
+    api_uri          = "api/v1/reporting-service/{proxy}",
+    api_key_required = false,
+    methods_allowed  = ["GET", "PUT"]
+    authorization    = true,
+    authorizer       = "task"
+  },
 }
 
 cloudwatch_dashboard_availability_query = "| fields @timestamp, @message\r\n| filter @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/console-service\\/task\\/.* - Status: / or @message like /HTTP Method: POST - Resource Path: \\/.*\\/api\\/v.*\\/tasks\\/.* - Status: /\r\n| parse @message /Status: (?<status_code>\\d+)/\r\n| fields (status_code != 408 AND status_code != 500 AND status_code != 501 AND status_code != 502 AND status_code != 503 AND status_code != 504 AND status_code != 209) as request_ok\r\n| stats count(*) as total_requests, sum(request_ok) as successfull_requests, avg(request_ok) * 100 as Availability"
