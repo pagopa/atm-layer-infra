@@ -364,8 +364,8 @@ api_gateway_integrations = {
   #   authorizer       = ""
   # },
   atm_layer_reporting_service = {
-    api_path         = "transfer-lists",
-    api_uri          = "api/v1/reporting-service/{proxy}/",
+    api_path         = "reporting-service",
+    api_uri          = "api/v1/reporting-service/{proxy}",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT"]
     authorization    = true,
