@@ -93,6 +93,10 @@ prefix_list_entries = [
   {
     cidr        = "20.31.11.237/32"
     description = "IDPay UAT"
+  },
+  {
+    cidr        = "20.86.224.30/32"
+    description = "Node UAT"
   }
 ]
 
