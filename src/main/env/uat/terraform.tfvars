@@ -93,6 +93,10 @@ prefix_list_entries = [
   {
     cidr        = "20.31.11.237/32"
     description = "IDPay UAT"
+  },
+  {
+    cidr        = "20.86.224.30/32"
+    description = "Node UAT"
   }
 ]
 
@@ -134,11 +138,11 @@ eks_addons = {
     resolve_conflict = "PRESERVE"
   }
 }
-eks_node_group_version = "1.30.2-20240904"
-eks_kubernetes_version = "1.30"
+eks_node_group_version = "1.32.7-20250821"
+eks_kubernetes_version = "1.32"
 
 rds_cluster_name                    = "rds"
-rds_cluster_engine_version          = "15.4"
+rds_cluster_engine_version          = "15.12"
 rds_cluster_db_name                 = "pagopadb"
 rds_cluster_port                    = 5432
 rds_cluster_master_username         = "pagopaadmin"
@@ -300,6 +304,9 @@ services = {
   },
   atm_layer_user_service = {
     name = "user-service"
+  },
+  atm_layer_reporting_service = {
+    name = "reporting-service"
   }
 }
 
