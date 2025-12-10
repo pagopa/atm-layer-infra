@@ -134,7 +134,7 @@ eks_addons = {
   },
   vpc-cni = {
     name             = "vpc-cni"
-    version          = "v1.20.4-eksbuild.1"
+    version          = "v1.20.4-eksbuild.2"
     resolve_conflict = "PRESERVE"
   }
 }
