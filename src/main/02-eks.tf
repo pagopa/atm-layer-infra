@@ -252,7 +252,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   node_group_name = local.eks_node_group_name
   node_role_arn   = aws_iam_role.eks_nodes.arn
 
-  ami_type             = "AL2_x86_64"
+  ami_type             = "AL2023_x86_64_STANDARD"
   release_version      = var.eks_node_group_version
   version              = var.eks_kubernetes_version
   force_update_version = false

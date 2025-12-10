@@ -138,8 +138,8 @@ eks_addons = {
     resolve_conflict = "PRESERVE"
   }
 }
-eks_node_group_version = "1.32.7-20250821"
-eks_kubernetes_version = "1.32"
+eks_node_group_version = "1.33.5-20251120"
+eks_kubernetes_version = "1.33"
 
 rds_cluster_name                    = "rds"
 rds_cluster_engine_version          = "15.12"
