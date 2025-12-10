@@ -124,17 +124,17 @@ helm_kube_downscaler_cronjob = "Mon-Fri 08:35-19:15 Europe/Rome"
 eks_addons = {
   coredns = {
     name             = "coredns"
-    version          = "v1.11.1-eksbuild.8"
+    version          = "v1.12.4-eksbuild.1"
     resolve_conflict = "NONE"
   },
   kube-proxy = {
     name             = "kube-proxy"
-    version          = "v1.30.0-eksbuild.3"
+    version          = "v1.33.5-eksbuild.2"
     resolve_conflict = "NONE"
   },
   vpc-cni = {
     name             = "vpc-cni"
-    version          = "v1.18.1-eksbuild.3"
+    version          = "v1.20.4-eksbuild.1"
     resolve_conflict = "PRESERVE"
   }
 }
