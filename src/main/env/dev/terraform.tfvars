@@ -369,7 +369,7 @@ api_gateway_integrations = {
   # },
   atm_layer_reporting_service = {
     api_path         = "reporting-service-bank",
-    api_uri          = "api/v1/reporting-service/transfer-lists/{proxy}/",
+    api_uri          = "api/v1/reporting-service/bank/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT"]
     authorization    = true,
