@@ -764,3 +764,27 @@ resource "aws_secretsmanager_secret_policy" "node_secret_manager_policy" {
     }]
   })
 }
+
+########
+# Secret Manager - node (add manually the secrets value after pod deployment)
+########
+resource "aws_secretsmanager_secret" "reporting_secret_manager" {
+  name        = "${local.namespace}/reporting/credentials"
+  description = "reporting API Key"
+}
+
+resource "aws_secretsmanager_secret_policy" "reporting_secret_manager_policy" {
+  secret_arn = aws_secretsmanager_secret.reporting_secret_manager.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        AWS = "${aws_iam_role.eks_cluster.arn}"
+      },
+      Action   = "secretsmanager:GetSecretValue",
+      Resource = "*"
+    }]
+  })
+}
