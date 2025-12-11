@@ -26,6 +26,14 @@ resource "helm_release" "alb_controller" {
     name  = "serviceAccount.create"
     value = "true"
   }
+  set {
+    name  = "region"
+    value = var.aws_region
+  }
+  set {
+    name  = "vpcId"
+    value = aws_vpc.main.id
+  }
 }
 
 # Following data resource needs Helm chart deployed for ALB Controller
