@@ -124,22 +124,22 @@ helm_kube_downscaler_cronjob = "Mon-Fri 07:50-20:15 Europe/Rome"
 eks_addons = {
   coredns = {
     name             = "coredns"
-    version          = "v1.11.1-eksbuild.8"
+    version          = "v1.12.4-eksbuild.1"
     resolve_conflict = "NONE"
   },
   kube-proxy = {
     name             = "kube-proxy"
-    version          = "v1.30.0-eksbuild.3"
+    version          = "v1.33.5-eksbuild.2"
     resolve_conflict = "NONE"
   },
   vpc-cni = {
     name             = "vpc-cni"
-    version          = "v1.18.1-eksbuild.3"
+    version          = "v1.20.4-eksbuild.2"
     resolve_conflict = "PRESERVE"
   }
 }
-eks_node_group_version = "1.32.7-20250821"
-eks_kubernetes_version = "1.32"
+eks_node_group_version = "1.33.5-20251120"
+eks_kubernetes_version = "1.33"
 
 rds_cluster_name                    = "rds"
 rds_cluster_engine_version          = "15.12"
@@ -341,8 +341,8 @@ api_gateway_integrations = {
     authorizer       = "backoffice"
   },
   atm_layer_reporting_service = {
-    api_path         = "reporting-service",
-    api_uri          = "api/v1/reporting-service/{proxy}",
+    api_path         = "reporting-service-bank",
+    api_uri          = "api/v1/reporting-service/bank/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT"]
     authorization    = true,
