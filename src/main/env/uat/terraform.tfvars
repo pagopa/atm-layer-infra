@@ -340,7 +340,7 @@ api_gateway_integrations = {
     authorization    = false,
     authorizer       = "backoffice"
   },
-    atm_layer_reporting_service = {
+  atm_layer_reporting_service = {
     api_path         = "reporting-service",
     api_uri          = "api/v1/reporting-service/{proxy}",
     api_key_required = false,

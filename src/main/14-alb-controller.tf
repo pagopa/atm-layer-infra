@@ -27,6 +27,14 @@ resource "helm_release" "alb_controller" {
     value = "true"
   }
   set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.aws_ingress_controller.arn
+  }
+  set {
+    name  = "serviceAccount.name"
+    value = local.alb_controller_sa_name
+  }
+  set {
     name  = "region"
     value = var.aws_region
   }

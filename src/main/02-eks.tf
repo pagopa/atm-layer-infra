@@ -1,6 +1,7 @@
 locals {
-  eks_cluster_name    = "${local.namespace}-${var.eks_cluster_name}"
-  eks_node_group_name = "${local.namespace}-${var.eks_node_group_name}"
+  eks_cluster_name       = "${local.namespace}-${var.eks_cluster_name}"
+  eks_node_group_name    = "${local.namespace}-${var.eks_node_group_name}"
+  alb_controller_sa_name = "aws-load-balancer-controller"
 }
 
 ########
@@ -354,6 +355,9 @@ resource "aws_iam_policy" "alb_ingress_controller" {
                 "ec2:DescribeTags",
                 "ec2:GetCoipPoolUsage",
                 "ec2:DescribeCoipPools",
+                "ec2:GetSecurityGroupsForVpc",
+                "ec2:DescribeIpamPools",
+                "ec2:DescribeRouteTables",
                 "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeListeners",
@@ -363,7 +367,10 @@ resource "aws_iam_policy" "alb_ingress_controller" {
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetGroupAttributes",
                 "elasticloadbalancing:DescribeTargetHealth",
-                "elasticloadbalancing:DescribeTags"
+                "elasticloadbalancing:DescribeTags",
+                "elasticloadbalancing:DescribeTrustStores",
+                "elasticloadbalancing:DescribeListenerAttributes",
+                "elasticloadbalancing:DescribeCapacityReservation"
             ],
             "Resource": "*"
         },
@@ -512,7 +519,10 @@ resource "aws_iam_policy" "alb_ingress_controller" {
                 "elasticloadbalancing:DeleteLoadBalancer",
                 "elasticloadbalancing:ModifyTargetGroup",
                 "elasticloadbalancing:ModifyTargetGroupAttributes",
-                "elasticloadbalancing:DeleteTargetGroup"
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:ModifyListenerAttributes",
+                "elasticloadbalancing:ModifyCapacityReservation",
+                "elasticloadbalancing:ModifyIpPools"
             ],
             "Resource": "*",
             "Condition": {
@@ -558,13 +568,45 @@ resource "aws_iam_policy" "alb_ingress_controller" {
                 "elasticloadbalancing:ModifyListener",
                 "elasticloadbalancing:AddListenerCertificates",
                 "elasticloadbalancing:RemoveListenerCertificates",
-                "elasticloadbalancing:ModifyRule"
+                "elasticloadbalancing:ModifyRule",
+                "elasticloadbalancing:SetRulePriorities"
             ],
             "Resource": "*"
         }
     ]
 }
 EOF
+}
+
+#######
+# ALB Controller IAM Role
+########
+
+resource "aws_iam_role" "aws_ingress_controller" {
+  name = "aws-load-balancer-controller-${aws_eks_cluster.eks_cluster.name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.eks.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${aws_iam_openid_connect_provider.eks.url}:sub" = "system:serviceaccount:kube-system:${local.alb_controller_sa_name}"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "aws_ingress_controller_attach" {
+  role       = aws_iam_role.aws_ingress_controller.name
+  policy_arn = aws_iam_policy.alb_ingress_controller.arn
 }
 
 resource "aws_iam_role_policy_attachment" "eks_nodes_4" {
