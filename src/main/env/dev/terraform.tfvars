@@ -161,7 +161,7 @@ redis_cluster_parameter_group_name = "default.redis7"
 redis_cluster_maintenance_window   = "sun:01:00-sun:03:00"
 
 helm_alb_controller_chart_version               = "1.6.0"
-helm_fluent_bit_chart_version                   = "0.1.30"
+helm_fluent_bit_chart_version                   = "0.1.35"
 helm_fluent_bit_create_serviceaccount           = true
 helm_fluent_bit_enabled_cloudwatchlogs          = true
 helm_fluent_bit_logretentiondays_cloudwatchlogs = 7
