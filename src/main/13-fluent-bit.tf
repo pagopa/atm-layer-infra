@@ -19,6 +19,15 @@ resource "helm_release" "fluent_bit" {
   }
 
   set {
+    name = "serviceAccount.name"
+    value = local.fluent_bit_sa_name
+  }
+
+  set {
+    name = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+  }
+
+  set {
     name  = "cloudWatchLogs.enabled"
     value = var.helm_fluent_bit_enabled_cloudwatchlogs
   }

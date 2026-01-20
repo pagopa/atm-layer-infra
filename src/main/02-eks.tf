@@ -2,6 +2,7 @@ locals {
   eks_cluster_name       = "${local.namespace}-${var.eks_cluster_name}"
   eks_node_group_name    = "${local.namespace}-${var.eks_node_group_name}"
   alb_controller_sa_name = "aws-load-balancer-controller"
+  fluent_bit_sa_name     = "aws-for-fluent-bit"
 }
 
 ########
@@ -579,6 +580,32 @@ EOF
 }
 
 #######
+# Fluent Bit IAM Role
+########
+
+resource "aws_iam_role" "fluent_bit" {
+  name = "fluent_bit-${aws_eks_cluster.eks_cluster.name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.eks.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${aws_iam_openid_connect_provider.eks.url}:sub" = "system:serviceaccount:kube-system:${local.fluent_bit_sa_name}"
+          }
+        }
+      }
+    ]
+  })
+}
+
+#######
 # ALB Controller IAM Role
 ########
 
@@ -607,6 +634,11 @@ resource "aws_iam_role" "aws_ingress_controller" {
 resource "aws_iam_role_policy_attachment" "aws_ingress_controller_attach" {
   role       = aws_iam_role.aws_ingress_controller.name
   policy_arn = aws_iam_policy.alb_ingress_controller.arn
+}
+
+resource "aws_iam_role_policy_attachment" "fluent_bit_attach" {
+  role       = aws_iam_role.fluent_bit.name
+  policy_arn = aws_iam_policy.fluent_bit.arn
 }
 
 resource "aws_iam_role_policy_attachment" "eks_nodes_4" {
