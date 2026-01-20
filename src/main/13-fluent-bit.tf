@@ -19,12 +19,13 @@ resource "helm_release" "fluent_bit" {
   }
 
   set {
-    name = "serviceAccount.name"
+    name  = "serviceAccount.name"
     value = local.fluent_bit_sa_name
   }
 
   set {
-    name = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.fluent_bit.arn
   }
 
   set {
