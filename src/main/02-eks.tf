@@ -638,7 +638,7 @@ resource "aws_iam_role_policy_attachment" "aws_ingress_controller_attach" {
 
 resource "aws_iam_role_policy_attachment" "fluent_bit_attach" {
   role       = aws_iam_role.fluent_bit.name
-  policy_arn = aws_iam_policy.fluent_bit.arn
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_nodes_4" {
