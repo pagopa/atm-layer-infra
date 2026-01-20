@@ -584,7 +584,7 @@ EOF
 ########
 
 resource "aws_iam_role" "fluent_bit" {
-  name = "fluent_bit-${aws_eks_cluster.eks_cluster.name}"
+  name = "fluent-bit-${aws_eks_cluster.eks_cluster.name}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
