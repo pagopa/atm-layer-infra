@@ -34,6 +34,16 @@ resource "helm_release" "fluent_bit" {
   }
 
   set {
+    name  = "cloudWatchLogs.logGroupTemplate"
+    value = "/aws/eks/fluentbit-cloudwatch/workload/$kubernetes['namespace_name']"
+  }
+
+  set {
+    name  = "cloudWatchLogs.logStreamTemplate"
+    value = "$kubernetes['pod_name'].$kubernetes['container_name']"
+  }
+
+  set {
     name  = "cloudWatchLogs.logGroupName"
     value = "/aws/eks/${aws_eks_cluster.eks_cluster.name}/logs"
   }
