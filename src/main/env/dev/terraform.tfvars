@@ -356,7 +356,7 @@ api_gateway_integrations = {
     api_uri          = "api/v1/console-service/{proxy}/",
     api_key_required = false,
     methods_allowed  = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-    authorization    = false,
+    authorization    = true,
     authorizer       = "backoffice"
   },
   # atm_layer_user_service = { # da togliere
